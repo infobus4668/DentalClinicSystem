@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+    <h2>{{ page_title }}</h2>
+    <h2 class="appointment-info">
+        For: {{ appointment.patient.name }} with Dr. {{ appointment.doctor.name }}
+    </h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="button-success">Save Record</button>
+    </form>
+
+    <div class="main-actions-bar">
+        <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="action-link button-secondary">Cancel</a>
+    </div>
+{% endblock content %}

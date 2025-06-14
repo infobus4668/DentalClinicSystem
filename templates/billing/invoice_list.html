@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block extra_head %}
+<style>
+    .filter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px; margin-bottom: 25px; }
+    .filter-bar .search-form { display: flex; gap: 10px; }
+    .filter-bar .status-filters { display: flex; gap: 10px; align-items: center; }
+    .filter-bar .status-filters a { padding: 8px 12px; border-radius: 4px; text-decoration: none; background-color: #e9ecef; color: #495057; font-weight: 500; font-size: 0.9em; }
+    .filter-bar .status-filters a.active { background-color: #007bff; color: #fff; }
+</style>
+{% endblock extra_head %}
+
+{% block content %}
+    <h2>{{ page_title }}</h2>
+
+    <div class="page-actions" style="border-top: none; padding-top: 0;">
+        <a href="{% url 'billing:create_invoice' %}" class="action-link button-primary">Create New Invoice</a>
+    </div>
+    <div class="filter-bar">
+        <form method="GET" action="{% url 'billing:invoice_list' %}" class="search-form">
+            <input type="text" name="q" class="form-control" placeholder="Search by Invoice # or Patient" value="{{ search_query|default:'' }}" style="width: 250px;">
+            {% if status_filter %}
+                <input type="hidden" name="status" value="{{ status_filter }}">
+            {% endif %}
+            <button type="submit" class="button button-primary">Search</button>
+        </form>
+
+        <div class="status-filters">
+            <strong>Filter by Status:</strong>
+            <a href="{% url 'billing:invoice_list' %}" class="{% if not status_filter %}active{% endif %}">All</a>
+            {% for value, display in status_choices %}
+                <a href="?status={{ value }}&q={{ search_query|default:'' }}" class="{% if status_filter == value %}active{% endif %}">{{ display }}</a>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if invoices_list %}
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Paid</th>
+                    <th>Balance Due</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in invoices_list %}
+                <tr>
+                    <td><a href="{% url 'billing:invoice_detail' invoice.id %}">{{ invoice.invoice_number }}</a></td>
+                    <td>{{ invoice.patient.name }}</td>
+                    <td>{{ invoice.doctor.name|default:"N/A" }}</td>
+                    <td>{{ invoice.invoice_date }}</td>
+                    <td>₹{{ invoice.total_amount|floatformat:2 }}</td>
+                    <td>₹{{ invoice.amount_paid|floatformat:2 }}</td>
+                    <td>₹{{ invoice.balance_due|floatformat:2 }}</td>
+                    <td><span class="status-badge status-{{ invoice.status }}">{{ invoice.get_status_display }}</span></td>
+                    <td class="actions-column">
+                        <a href="{% url 'billing:edit_invoice' invoice.id %}" class="action-link button-warning edit-link">Edit</a>
+                        <a href="{% url 'billing:delete_invoice' invoice.id %}" class="action-link button-danger delete-link">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="no-items">No invoices found matching your criteria.</p>
+    {% endif %}
+{% endblock content %}

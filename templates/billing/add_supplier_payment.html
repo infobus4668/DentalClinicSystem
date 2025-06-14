@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+<div class="form-container">
+    <h2 class="form-title">{{ page_title }}</h2>
+    <div class="invoice-summary" style="max-width: 400px; margin: 0 auto 2em auto; text-align: left;">
+        <p><strong>Supplier:</strong> {{ purchase_order.supplier.name }}</p>
+        <p><strong>Order Total:</strong> ₹{{ purchase_order.total_amount|floatformat:2 }}</p>
+    </div>
+    
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "includes/form_fields.html" %}
+        <div class="form-actions">
+            <button type="submit" class="button button-primary">Record Payment</button>
+            <a href="{% url 'billing:purchase_order_detail' purchase_order.id %}" class="button button-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock content %}

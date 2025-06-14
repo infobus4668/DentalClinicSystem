@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+<h2>{{ page_title }}</h2>
+
+<div class="page-actions">
+    <a href="{% url 'billing:purchase_order_create' %}" class="action-link button-primary">Create New Purchase Order</a>
+    <a href="{% url 'billing:product_list' %}" class="button button-secondary">Back to Product List</a>
+</div>
+
+{% if purchase_orders_list %}
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>PO #</th>
+                    <th>Supplier</th>
+                    <th>Order Date</th>
+                    <th class="text-right">Total Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for po in purchase_orders_list %}
+                <tr>
+                    <td>{{ po.id }}</td>
+                    <td>{{ po.supplier.name }}</td>
+                    <td>{{ po.order_date|date:"M d, Y" }}</td>
+                    <td class="text-right">₹{{ po.total_amount|floatformat:2 }}</td>
+                    <td><span class="status-badge status-{{ po.status }}">{{ po.get_status_display }}</span></td>
+                    <td class="actions-column">
+                        <a href="{% url 'billing:purchase_order_detail' po.id %}" class="button button-info">Details</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p class="no-items">No purchase orders found. Create one to get started.</p>
+{% endif %}
+{% endblock content %}

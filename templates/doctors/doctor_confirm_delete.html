@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+    <h2>{{ page_title }}</h2>
+    <p>Are you sure you want to delete the record for: <strong>Dr. {{ doctor.name }} ({{ doctor.get_specialization_display }})</strong>?</p>
+    <p>This action cannot be undone.</p>
+
+    <form method="POST" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="button button-danger">Yes, Delete Doctor</button>
+    </form>
+    <a href="{% url 'doctors:doctor_detail' doctor.id %}" class="action-link button-secondary">Cancel</a>
+{% endblock content %}

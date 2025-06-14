@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+<h2>{{ page_title }}</h2>
+
+<div class="main-actions-bar">
+        {# CORRECTED: The URL name is now 'purchase_order_create', which is a valid URL. #}
+        <a href="{% url 'billing:purchase_order_create' %}" class="button button-primary">Create Purchase Order</a>
+    </div>
+<p>
+    This report shows all active products where the current stock quantity is less than or equal to its set threshold.
+</p>
+
+{% if low_stock_products %}
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Brand</th>
+                    <th class="text-center">Current Stock</th>
+                    <th class="text-center">Low Stock Threshold</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in low_stock_products %}
+                <tr class="low-stock-warning">
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.brand|default:"N/A" }}</td>
+                    <td class="text-center"><strong>{{ product.stock_quantity }}</strong></td>
+                    <td class="text-center">{{ product.low_stock_threshold }}</td>
+                    <td>Low Stock</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p class="no-items" style="background-color: #d4edda; color: #155724; border-color: #c3e6cb;">
+        Great! No products are currently low on stock.
+    </p>
+{% endif %}
+
+{% endblock content %}

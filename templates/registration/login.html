@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Dental Clinic MS{% endblock title %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 40px auto; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.075); border-radius: 8px;">
+    <h2>Login to Your Account</h2>
+
+    {% if form.errors %}
+        <p style="color: #dc3545; border: 1px solid #f5c6cb; background-color: #f8d7da; padding: 10px; border-radius: 5px;">
+            Your username and password didn't match. Please try again.
+        </p>
+    {% endif %}
+
+    <form method="POST" action="{% url 'login' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        
+        <div class="field-container">
+            <label for="{{ form.username.id_for_label }}">Username:</label>
+            {{ form.username }}
+        </div>
+        
+        <div class="field-container">
+            <label for="{{ form.password.id_for_label }}">Password:</label>
+            {{ form.password }}
+        </div>
+
+        <div class="main-actions-bars" style="border-top: none; padding-top: 10px; margin-top: 10px;">
+            <button type="submit" class="button button-primary">Login</button>
+        </div>
+    </form>
+    
+    <div style="margin-top: 20px; text-align: center;">
+        <a href="{% url 'password_reset' %}">Forgot your password?</a>
+    </div>
+</div>
+{% endblock content %}

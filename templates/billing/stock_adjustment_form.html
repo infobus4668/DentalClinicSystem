@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+<div class="form-container" style="max-width: 800px; margin: auto;">
+    <h2 class="form-title">{{ page_title }}</h2>
+    <p class="form-subtitle">Use this form to manually correct inventory levels for events like damage or finding uncounted stock.</p>
+    
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div class="messages">
+                {% for error in form.non_field_errors %}
+                    <li class="error">{{ error }}</li>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        {% for field in form %}
+            <div class="field-container">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                    <small class="form-text text-muted" style="display: block; margin-top: .25rem;">{{ field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                    <div class="error-message" style="color: var(--danger-color); font-size: 0.9em; margin-top: .25rem;">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        
+        <div class="form-actions" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px; text-align: right;">
+            <a href="{% url 'billing:stock_adjustment_list' %}" class="button button-secondary">Cancel</a>
+            <button type="submit" class="button button-primary">Save Adjustment</button>
+        </div>
+    </form>
+</div>
+{% endblock content %}

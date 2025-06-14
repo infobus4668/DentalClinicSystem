@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+    <h2>{{ page_title }}</h2>
+
+    <div class="detail-item">
+        <strong>Invoice Number:</strong> {{ invoice.invoice_number }}
+    </div>
+    <div class="detail-item">
+        <strong>Patient:</strong> <a href="{% url 'patients:patient_detail' invoice.patient.id %}">{{ invoice.patient.name }}</a>
+    </div>
+    <div class="detail-item">
+        <strong>Doctor:</strong> {% if invoice.doctor %}<a href="{% url 'doctors:doctor_detail' invoice.doctor.id %}">Dr. {{ invoice.doctor.name }}</a>{% else %}N/A{% endif %}
+    </div>
+    <div class="detail-item">
+        <strong>Appointment:</strong>
+        {% if invoice.appointment %}
+            <a href="{% url 'appointments:appointment_detail' invoice.appointment.id %}">
+                {{ invoice.appointment.appointment_datetime|date:"F j, Y, P" }}
+            </a>
+        {% else %}
+            N/A
+        {% endif %}
+    </div>
+    <div class="detail-item">
+        <strong>Invoice Date:</strong> {{ invoice.invoice_date }}
+    </div>
+    <div class="detail-item">
+        <strong>Due Date:</strong> {{ invoice.due_date|default:"N/A" }}
+    </div>
+    <div class="detail-item">
+        <strong>Status:</strong> <span class="status-badge status-{{ invoice.status }}">{{ invoice.get_status_display }}</span>
+    </div>
+    <div class="detail-item">
+        <strong>Notes:</strong> {{ invoice.notes|default:"N/A" }}
+    </div>
+    <div class="detail-item">
+        <strong>Created:</strong> {{ invoice.created_at|date:"F j, Y, P" }}
+    </div>
+    <div class="detail-item">
+        <strong>Last Updated:</strong> {{ invoice.updated_at|date:"F j, Y, P" }}
+    </div>
+
+    <h2>Invoice Items</h2>
+    {% if invoice_items %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                    <th class="text-right">Unit Price</th>
+                    <th class="text-right">Discount</th>
+                    <th class="text-right">Net Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in invoice_items %}
+                <tr>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td class="text-right">₹{{ item.unit_price|floatformat:2 }}</td>
+                    <td class="text-right">- ₹{{ item.discount|floatformat:2 }}</td>
+                    <td class="text-right">₹{{ item.net_price|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="no-items">No items added to this invoice.</p>
+    {% endif %}
+
+    {# UPDATED SUMMARY SECTION #}
+    <div class="invoice-summary">
+        <table class="summary-table" style="width: 50%; margin-left: 50%; border: none;">
+             <tbody>
+                <tr>
+                    <td>Subtotal:</td>
+                    <td class="text-right">₹{{ invoice.total_amount|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td>Total Discount:</td>
+                    <td class="text-right">- ₹{{ invoice.total_discount|floatformat:2 }}</td>
+                </tr>
+                <tr style="font-weight: bold;">
+                    <td>Net Amount:</td>
+                    <td class="text-right">₹{{ invoice.net_amount|floatformat:2 }}</td>
+                </tr>
+                 <tr>
+                    <td>Amount Paid:</td>
+                    <td class="text-right">- ₹{{ invoice.amount_paid|floatformat:2 }}</td>
+                </tr>
+                <tr class="grand-total" style="font-size: 1.2em; border-top: 2px solid #333;">
+                    <td>Balance Due:</td>
+                    <td class="text-right">₹{{ invoice.balance_due|floatformat:2 }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    {# This is the updated action bar for templates/billing/invoice_detail.html #}
+
+<div class="main-actions-bar">
+    <a href="{% url 'billing:invoice_list' %}" class="action-link button-secondary">Back to Invoices</a>
+    <a href="{% url 'billing:edit_invoice' invoice.id %}" class="action-link button-warning">Edit Invoice</a>
+    <a href="{% url 'billing:invoice_print' invoice.id %}" target="_blank" class="action-link button-info">Print Simple Invoice</a>
+    
+    {# FIX: Only show this button if the invoice is linked to an appointment #}
+    {% if invoice.appointment %}
+    <a href="{% url 'appointments:print_bill_summary' invoice.appointment.id %}" target="_blank" class="action-link button-primary">Print Full Bill & Summary</a>
+    {% endif %}
+
+    <a href="{% url 'billing:delete_invoice' invoice.id %}" class="action-link button-danger">Delete Invoice</a>
+</div>
+{% endblock content %}

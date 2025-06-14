@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+    <h2>{{ page_title }}</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div class="detail-card mb-4">
+            <div class="detail-card-header">
+                <h3>Order Details</h3>
+            </div>
+            {{ form.as_p }}
+        </div>
+
+        <div class="detail-card">
+            <div class="detail-card-header">
+                <h3>Items to Order</h3>
+            </div>
+            
+            {{ formset.management_form }}
+            
+            <div id="item-form-container">
+                {% for item_form in formset %}
+                    <div class="item-form">
+                        {{ item_form.as_p }}
+                        {% if item_form.instance.pk %}
+                            {{ item_form.DELETE }}
+                        {% endif %}
+                        <hr>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <button type="button" id="add-item-button" class="button button-secondary">Add Another Item</button>
+        </div>
+
+        <div class="main-actions-bar">
+            <button type="submit" class="button button-success">Save Purchase Order</button>
+            <a href="{% url 'billing:purchase_order_list' %}" class="action-link button-secondary">Cancel</a>
+        </div>
+    </form>
+
+    <template id="item-form-template">
+        {{ formset.empty_form.as_p }}
+        <hr>
+    </template>
+
+{% endblock content %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addItemButton = document.getElementById('add-item-button');
+    const formContainer = document.getElementById('item-form-container');
+    const formTemplate = document.getElementById('item-form-template');
+    const totalFormsInput = document.querySelector('input[name="items-TOTAL_FORMS"]');
+
+    if (!addItemButton || !formContainer || !formTemplate || !totalFormsInput) {
+        console.error("Formset script elements not found!");
+        return;
+    }
+
+    addItemButton.addEventListener('click', function() {
+        // Get the current number of forms, which will be the index for the new form
+        let formNum = parseInt(totalFormsInput.value);
+        
+        // Get the HTML from our clean template
+        let newFormHTML = formTemplate.innerHTML;
+        
+        // Replace the '__prefix__' placeholder with the new form's index
+        newFormHTML = newFormHTML.replace(/__prefix__/g, formNum);
+        
+        // Create a new div element to wrap the new form
+        const newFormDiv = document.createElement('div');
+        newFormDiv.classList.add('item-form');
+        newFormDiv.innerHTML = newFormHTML;
+        
+        // Append the new form to the container
+        formContainer.appendChild(newFormDiv);
+        
+        // Increment the total number of forms in the management form
+        totalFormsInput.value = formNum + 1;
+    });
+});
+</script>
+{% endblock extra_js %}

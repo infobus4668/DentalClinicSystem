@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+    <h2>{{ page_title }}</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <div class="main-actions-bar">
+            <button type="submit" class="button button-success">Save Changes</button>
+            <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="action-link button-secondary">Cancel</a>
+        </div>
+    </form>
+{% endblock content %}

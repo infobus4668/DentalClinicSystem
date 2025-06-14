@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+    <h2>{{ page_title }}</h2>
+
+    <div class="page-actions">
+    <a href="{% url 'billing:add_service' %}" class="action-link button-primary">Add New Service</a>
+    </div>
+    
+    {% if services_list %}
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Active</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in services_list %}
+                <tr>
+                    <td>{{ service.name }}</td>
+                    <td>₹{{ service.price|floatformat:2 }}</td>
+                    <td>{% if service.is_active %}Yes{% else %}No{% endif %}</td>
+                    <td>
+                        <a href="{% url 'billing:edit_service' service.id %}" class="action-link button-warning edit-link">Edit</a>
+                        <a href="{% url 'billing:delete_service' service.id %}" class="action-link button-danger delete-link">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="no-items">No services found in the system yet.</p>
+    {% endif %}
+{% endblock content %}

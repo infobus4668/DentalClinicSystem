@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+    <h2>{{ page_title }}</h2>
+    <p>Are you sure you want to delete the following service?</p>
+
+    <div class="detail-item">
+        <strong>Name:</strong> {{ service.name }}
+    </div>
+    <div class="detail-item">
+        <strong>Price:</strong> ₹{{ service.price|floatformat:2 }}
+    </div>
+    <div class="detail-item">
+        <strong>Description:</strong> {{ service.description|default:"N/A" }}
+    </div>
+
+    <p>This action cannot be undone.</p>
+
+    <form method="POST" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="button button-danger">Yes, Delete Service</button>
+    </form>
+    <a href="{% url 'billing:service_list' %}" class="action-link button-secondary">Cancel</a>
+{% endblock content %}

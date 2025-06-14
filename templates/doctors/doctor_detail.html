@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+    <h2>{{ page_title }}</h2>
+
+    <div class="detail-item">
+        <strong>Doctor ID:</strong> {{ doctor.id }}
+    </div>
+    <div class="detail-item">
+        <strong>Name:</strong> Dr. {{ doctor.name }}
+    </div>
+    <div class="detail-item">
+        <strong>Specialization:</strong> {{ doctor.get_specialization_display }}
+    </div>
+    <div class="detail-item">
+        <strong>Contact Number:</strong> {{ doctor.contact_number }}
+    </div>
+    <div class="detail-item">
+        <strong>Email:</strong> {{ doctor.email|default:"N/A" }}
+    </div>
+    <div class="detail-item">
+        <strong>Credentials:</strong> {{ doctor.credentials|default:"N/A" }}
+    </div>
+    <div class="detail-item">
+        <strong>Availability Notes:</strong> {{ doctor.availability_notes|default:"N/A" }}
+    </div>
+    <div class="detail-item">
+        <strong>Record Created:</strong> {{ doctor.created_at }}
+    </div>
+    <div class="detail-item">
+        <strong>Last Updated:</strong> {{ doctor.updated_at }}
+    </div>
+
+    <div class="main-actions-bar">
+        <a href="{% url 'doctors:doctor_list' %}" class="action-link button-secondary">Back to Doctor List</a>
+        <a href="{% url 'doctors:edit_doctor' doctor.id %}" class="action-link button-warning">Edit Doctor</a>
+        <a href="{% url 'doctors:delete_doctor' doctor.id %}" class="action-link button-danger">Delete Doctor</a>
+    </div>
+{% endblock content %}

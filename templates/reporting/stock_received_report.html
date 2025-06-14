@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+<h2>{{ page_title }}</h2>
+<p>Filter by date range, supplier, product, or any combination.</p>
+
+<div class="card mb-4" style="background-color: #f8f9fa; padding: 20px;">
+    <form method="get" class="form-inline" style="gap: 20px; align-items: flex-end;">
+        <div class="field-container" style="flex: 1;">
+            {{ form.start_date.label_tag }}
+            {{ form.start_date }}
+        </div>
+        <div class="field-container" style="flex: 1;">
+            {{ form.end_date.label_tag }}
+            {{ form.end_date }}
+        </div>
+        <div class="field-container" style="flex: 2;">
+            {{ form.supplier.label_tag }}
+            {{ form.supplier }}
+        </div>
+        <div class="field-container" style="flex: 2;">
+            {{ form.product.label_tag }}
+            {{ form.product }}
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="button button-primary">Filter</button>
+            <a href="{% url 'reporting:stock_received_report' %}" class="button button-secondary">Clear</a>
+        </div>
+    </form>
+</div>
+
+{% if stock_items %}
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date Received</th>
+                    <th>Product</th>
+                    <th>Supplier</th>
+                    <th>Batch Number</th>
+                    <th class="text-right">Quantity</th>
+                    <th class="text-right">Cost per Item</th>
+                    <th class="text-right">Total Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in stock_items %}
+                <tr>
+                    <td>{{ item.date_received|date:"Y-m-d P" }}</td>
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.supplier.name|default:"N/A" }}</td>
+                    <td>{{ item.batch_number|default:"-" }}</td>
+                    <td class="text-right">{{ item.quantity }}</td>
+                    <td class="text-right">₹{{ item.cost_price|floatformat:2 }}</td>
+                    <td class="text-right">₹{% widthratio item.quantity 1 item.cost_price %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="no-items">
+        <p>No stock was received matching your filter criteria. Try broadening your search.</p>
+    </div>
+{% endif %}
+
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('.select2-enable').select2({
+            placeholder: "Select an option",
+            allowClear: true
+        });
+    });
+</script>
+{% endblock %}

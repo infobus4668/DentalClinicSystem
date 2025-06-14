@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Patient: {{ form.instance.name }}{% endblock title %}
+
+{% block content %}
+    <h2>Edit Patient: {{ form.instance.name }}</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        {# REPLACED {{ form.as_p }} with a structured loop for better styling #}
+        {{ form.non_field_errors }}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+            {% for field in form %}
+                <div class="field-container">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="error-message">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="main-actions-bar">
+            <button type="submit" class="button button-success">Save Changes</button>
+            <a href="{% url 'patients:patient_detail' form.instance.id %}" class="action-link button-secondary">Cancel</a>
+        </div>
+    </form>
+{% endblock content %}

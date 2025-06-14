@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+    <h2>{{ page_title }}</h2>
+    <p>Are you sure you want to delete the following product?</p>
+
+    <div class="detail-item">
+        <strong>Name:</strong> {{ product.name }}
+    </div>
+    <div class="detail-item">
+        <strong>Price:</strong> ₹{{ product.price|floatformat:2 }}
+    </div>
+    <div class="detail-item">
+        <strong>Stock:</strong> {{ product.stock_quantity }}
+    </div>
+    <div class="detail-item">
+        <strong>Description:</strong> {{ product.description|default:"N/A" }}
+    </div>
+
+    <p>This action cannot be undone.</p>
+
+    <form method="POST" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="button button-danger">Yes, Delete Product</button>
+    </form>
+    <a href="{% url 'billing:product_list' %}" class="action-link button-secondary">Cancel</a>
+{% endblock content %}
