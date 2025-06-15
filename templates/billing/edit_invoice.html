@@ -26,15 +26,20 @@
 
             {% for form in formset %}
                 <div class="formset-row" style="border-bottom: 1px solid #eee; padding-bottom: 1.5em; margin-bottom: 1.5em;">
+                    
+                    {% if form.non_field_errors %}
+                        <div class="error-message" style="color: var(--danger-color); font-weight: bold; margin-bottom: 10px;">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
                     <div class="formset-row-fields">
                         {% for hidden_field in form.hidden_fields %}{{ hidden_field }}{% endfor %}
-                        {# Explicitly render the DELETE field here, hidden #}
                         <div style="display:none;">
                             {{ form.DELETE }}
                         </div>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; align-items: flex-start;">
                             {% for field in form.visible_fields %}
-                                {# Only render fields that are NOT the DELETE field #}
                                 {% if field.name != 'DELETE' %}
                                     <div class="field-container" data-field-name="{{ field.name }}">
                                         {{ field.label_tag }}
@@ -56,13 +61,11 @@
             <div class="formset-row" style="border-bottom: 1px solid #eee; padding-bottom: 1.5em; margin-bottom: 1.5em;">
                 <div class="formset-row-fields">
                     {% for hidden_field in formset.empty_form.hidden_fields %}{{ hidden_field }}{% endfor %}
-                    {# Explicitly render the DELETE field here, hidden #}
                     <div style="display:none;">
                         {{ formset.empty_form.DELETE }}
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; align-items: flex-start;">
                         {% for field in formset.empty_form.visible_fields %}
-                            {# Only render fields that are NOT the DELETE field #}
                             {% if field.name != 'DELETE' %}
                                  <div class="field-container" data-field-name="{{ field.name }}">
                                     {{ field.label_tag }}
@@ -76,7 +79,7 @@
             </div>
         </template>
         
-        <button type="button" class="add-row-button button" id="add-item-button" style="margin-top: 15px;">Add another Invoice Item</button>
+        <button type="button" class="add-row-button button" id="add-item-button" style="margin-top: 15px;">Add Services or Product</button>
     </div>
     
     <div class="main-actions-bar">
@@ -98,7 +101,7 @@ $(document).ready(function() {
             if ($(this).hasClass("select2-hidden-accessible")) {
                 $(this).select2('destroy');
             }
-            $(this).select2({ theme: "classic", width: '100%' });
+            $(this).select2({ theme: "classic", width: '100%', placeholder: "Select an option", allowClear: true });
         });
 
         const productSelect = row.find('select[name$="-product"]');
@@ -115,10 +118,8 @@ $(document).ready(function() {
             batchSelect.html('<option value="">Select Batch</option>');
 
             if (productId && itemData.batches[productId]) {
-                // Reset service select
                 serviceSelect.val(null).trigger('change.select2');
 
-                // Populate batches for selected product
                 const batches = itemData.batches[productId];
                 batches.forEach(function(batch) {
                     const isSelected = (batch.id == currentBatch);
@@ -148,10 +149,8 @@ $(document).ready(function() {
             const batchId = $(this).val();
 
             if (productId && batchId && itemData.batches[productId]) {
-                // Find batch info
                 const batch = itemData.batches[productId].find(b => String(b.id) === String(batchId));
                 if (batch) {
-                    // Allow max as batch available + current (for editing existing)
                     const originalQuantity = parseInt(row.find('input[name$="-quantity"]').attr('value')) || 0;
                     quantityInput.attr('max', batch.available + originalQuantity);
                 } else {
@@ -166,6 +165,9 @@ $(document).ready(function() {
             const serviceId = $(this).val();
             if (serviceId) {
                 productSelect.val(null).trigger('change.select2');
+                // THIS IS THE NEWLY ADDED LINE
+                batchSelect.empty().append('<option value="" selected>Select Batch</option>').val('').trigger('change.select2');
+                
                 priceInput.val(itemData.services[serviceId] || '0.00');
                 descInput.val(serviceSelect.find('option:selected').text());
                 quantityInput.removeAttr('max');
@@ -175,7 +177,6 @@ $(document).ready(function() {
             }
         });
 
-        // Trigger change on page load for existing product/batch selections
         if(productSelect.val()) productSelect.trigger('change');
         if(serviceSelect.val()) serviceSelect.trigger('change');
     }

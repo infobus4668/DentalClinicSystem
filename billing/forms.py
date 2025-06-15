@@ -268,6 +268,6 @@ InvoiceItemFormSet = inlineformset_factory(
     form=InvoiceItemForm,
     formset=BaseInvoiceItemFormSet,
     fields=['service', 'product', 'stock_item', 'description', 'quantity', 'unit_price', 'discount'],
-    extra=1,
+    extra=0, # <-- THIS IS THE FIX
     can_delete=True
 )

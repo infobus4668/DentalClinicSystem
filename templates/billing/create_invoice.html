@@ -76,7 +76,7 @@
             </div>
         </template>
         
-        <button type="button" class="add-row-button button" id="add-item-button" style="margin-top: 15px;">Add another Invoice Item</button>
+        <button type="button" class="add-row-button button" id="add-item-button" style="margin-top: 15px;">Add Services or Product</button>
     </div>
 
     <div class="main-actions-bar">
@@ -93,8 +93,7 @@ $(document).ready(function() {
     const container = $('#invoice-items-container');
 
     function initializeRow(row) {
-        // Initialize select2 controls
-        row.find('.select2-enable').select2({ theme: "classic", width: '100%' });
+        row.find('.select2-enable').select2({ theme: "classic", width: '100%', placeholder: "Select an option", allowClear: true });
 
         const productSelect = row.find('select[name$="-product"]');
         const batchSelect = row.find('select[name$="-stock_item"]');
@@ -106,13 +105,10 @@ $(document).ready(function() {
         productSelect.off('change').on('change', function() {
             const productId = $(this).val();
             
-            // Reset batch select
             batchSelect.empty().append('<option value="" selected>Select Batch</option>').val('').trigger('change.select2');
             
             if (productId) {
-                // Reset service select
                 serviceSelect.val(null).trigger('change.select2');
-                // Populate batches for selected product
                 const batches = itemData.batches[productId] || [];
                 batches.forEach(function(batch) {
                     const option = new Option(batch.name, batch.id, false, false);
@@ -120,7 +116,6 @@ $(document).ready(function() {
                 });
                 batchSelect.trigger('change.select2');
                 
-                // Set unit price and description from product price and name
                 priceInput.val(itemData.products[productId]?.price || '0.00');
                 descInput.val(productSelect.find('option:selected').text());
             } else {
@@ -149,6 +144,9 @@ $(document).ready(function() {
             const serviceId = $(this).val();
             if (serviceId) {
                 productSelect.val(null).trigger('change.select2');
+                // THIS IS THE NEWLY ADDED LINE
+                batchSelect.empty().append('<option value="" selected>Select Batch</option>').val('').trigger('change.select2');
+
                 priceInput.val(itemData.services[serviceId] || '0.00');
                 descInput.val(serviceSelect.find('option:selected').text());
                 quantityInput.removeAttr('max');

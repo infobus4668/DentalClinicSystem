@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Sum, F
+from django.db.models.functions import Coalesce # IMPORT THIS
 from django.utils import timezone
 from django.conf import settings
 from patients.models import Patient
@@ -190,8 +191,9 @@ class Invoice(models.Model):
         Calculates the total amount (quantity * unit_price) from invoice items
         and updates total_amount field.
         """
+        # MODIFIED: Use Coalesce to handle temporarily empty prices gracefully.
         total = self.invoice_items.aggregate(
-            total=Sum(F('quantity') * F('unit_price'))
+            total=Sum(F('quantity') * Coalesce(F('unit_price'), Decimal('0.00')))
         )['total'] or Decimal('0.00')
         self.total_amount = total
 
@@ -202,9 +204,9 @@ class InvoiceItem(models.Model):
     stock_item = models.ForeignKey(StockItem, on_delete=models.PROTECT, null=True, blank=True, related_name='invoice_items')
     description = models.CharField(max_length=255, blank=True, default='', help_text="Custom description or auto-filled from service/product.")
     quantity = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    # MODIFIED: Made unit_price optional at the database level.
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), help_text="Discount for this specific item")
-    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
