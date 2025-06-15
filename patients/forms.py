@@ -2,41 +2,40 @@
 
 from django import forms
 from .models import Patient
+from phonenumber_field.formfields import PhoneNumberField
+from phonenumber_field.widgets import PhoneNumberPrefixWidget
 
 class PatientForm(forms.ModelForm):
-    
+    contact_number = PhoneNumberField(
+        region="IN", 
+        widget=PhoneNumberPrefixWidget(attrs={'class': 'form-control'}),
+        required=True
+    )
+
     class Meta:
         model = Patient
         fields = [
             'name', 
             'date_of_birth', 
             'gender', 
-            'contact_number', 
+            'contact_number',
             'place',
-            'pincode', # ADDED: Include the new pincode field
+            'pincode',
             'allergies', 
             'ongoing_conditions', 
             'medications'
         ]
         widgets = {
-            'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
-            'allergies': forms.Textarea(attrs={'rows': 3}),
-            'ongoing_conditions': forms.Textarea(attrs={'rows': 3}),
-            'medications': forms.Textarea(attrs={'rows': 3}),
+            'date_of_birth': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter full name'}),
+            'place': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Chennai'}),
+            'pincode': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 600001'}),
+            'gender': forms.Select(attrs={'class': 'form-control'}),
+            'allergies': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'ongoing_conditions': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'medications': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
         }
         labels = {
             'date_of_birth': 'Date of Birth',
-            'ongoing_conditions': 'Ongoing conditions',
+            'ongoing_conditions': 'Ongoing Conditions',
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Add placeholders and common styling class
-        self.fields['name'].widget.attrs.update({'placeholder': 'Enter full name'})
-        self.fields['contact_number'].widget.attrs.update({'placeholder': 'e.g., 9876543210'})
-        self.fields['place'].widget.attrs.update({'placeholder': 'e.g., Chennai'})
-        self.fields['pincode'].widget.attrs.update({'placeholder': 'e.g., 600001'}) # ADDED: Placeholder for pincode
-
-        for field_name, field in self.fields.items():
-            if 'class' not in field.widget.attrs:
-                field.widget.attrs.update({'class': 'form-control'})

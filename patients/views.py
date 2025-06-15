@@ -1,7 +1,7 @@
 # DENTALCLINICSYSTEM/patients/views.py
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required # <-- THIS LINE IS ADDED
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, ProtectedError
 from .models import Patient
@@ -9,7 +9,6 @@ from .forms import PatientForm
 from billing.models import Invoice
 from appointments.models import Appointment
 
-# View for listing all patients
 @login_required
 def patient_list_view(request):
     query = request.GET.get('q', '')
@@ -28,14 +27,12 @@ def patient_list_view(request):
     }
     return render(request, 'patients/patient_list.html', context)
 
-# View for adding a new patient
 @login_required
 def add_patient_view(request):
     if request.method == 'POST':
         form = PatientForm(request.POST)
         if form.is_valid():
             form.save()
-            # It's good practice to add a success message
             messages.success(request, f'Patient "{form.cleaned_data.get("name")}" was added successfully.')
             return redirect('patients:patient_list')
     else:
@@ -46,7 +43,6 @@ def add_patient_view(request):
     }
     return render(request, 'patients/add_patient.html', context)
 
-# View for a single patient's details
 @login_required
 def patient_detail_view(request, patient_id):
     patient = get_object_or_404(Patient, id=patient_id)
@@ -61,7 +57,6 @@ def patient_detail_view(request, patient_id):
     }
     return render(request, 'patients/patient_detail.html', context)
 
-# View for editing an existing patient
 @login_required
 def edit_patient_view(request, patient_id):
     patient_to_edit = get_object_or_404(Patient, id=patient_id)
@@ -82,7 +77,6 @@ def edit_patient_view(request, patient_id):
     }
     return render(request, 'patients/edit_patient.html', context)
 
-# View for deleting an existing patient (handles confirmation)
 @login_required
 def delete_patient_view(request, patient_id):
     patient_to_delete = get_object_or_404(Patient, id=patient_id)

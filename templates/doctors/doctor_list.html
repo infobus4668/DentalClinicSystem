@@ -6,8 +6,8 @@
 {% block content %}
     <h2>{{ page_title }}</h2>
 
-    <div class="page-actions">
-    <a href="{% url 'doctors:add_doctor' %}" class="action-link button-primary">Add New Doctor</a>
+    <div class="page-actions" style="display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <a href="{% url 'doctors:add_doctor' %}" class="action-link button-primary">Add New Doctor</a>
     </div>
     {% if doctors_list %}
     <div class="table-responsive">
@@ -30,7 +30,7 @@
                     <td>{{ doctor.contact_number }}</td>
                     <td>{{ doctor.email|default:"N/A" }}</td>
                     <td>{{ doctor.availability_notes|default:"N/A" }}</td>
-                    <td class="actions-column"> {# Added: Actions column for each row #}
+                    <td class="actions-column">
                         <a href="{% url 'doctors:edit_doctor' doctor.id %}" class="button button-warning">Edit</a>
                         <a href="{% url 'doctors:delete_doctor' doctor.id %}" class="button button-danger">Delete</a>
                     </td>

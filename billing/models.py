@@ -202,8 +202,9 @@ class InvoiceItem(models.Model):
     stock_item = models.ForeignKey(StockItem, on_delete=models.PROTECT, null=True, blank=True, related_name='invoice_items')
     description = models.CharField(max_length=255, blank=True, default='', help_text="Custom description or auto-filled from service/product.")
     quantity = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), help_text="Discount for this specific item")
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

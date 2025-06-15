@@ -7,9 +7,11 @@
     <p>Are you sure you want to delete the record for: <strong>Dr. {{ doctor.name }} ({{ doctor.get_specialization_display }})</strong>?</p>
     <p>This action cannot be undone.</p>
 
-    <form method="POST" style="display: inline;">
-        {% csrf_token %}
-        <button type="submit" class="button button-danger">Yes, Delete Doctor</button>
-    </form>
-    <a href="{% url 'doctors:doctor_detail' doctor.id %}" class="action-link button-secondary">Cancel</a>
+    <div style="margin-top: 20px; display: flex; justify-content: flex-end; align-items: center; gap: 10px;">
+        <a href="{% url 'doctors:doctor_detail' doctor.id %}" class="action-link button-secondary">Cancel</a>
+        <form method="POST" style="display: inline; margin: 0;">
+            {% csrf_token %}
+            <button type="submit" class="button button-danger">Yes, Delete Doctor</button>
+        </form>
+    </div>
 {% endblock content %}

@@ -7,10 +7,25 @@
 
     <form method="POST">
         {% csrf_token %}
-        {{ form.as_p }}
-    <div class="main-actions-bar">
-        <button type="submit" class="button button-success">Save Changes</button>
-        <a href="{% url 'doctors:doctor_detail' doctor.id %}" class="action-link button-secondary">Cancel</a>
-    </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+            {% for field in form %}
+                <div class="field-container">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="error-message">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="main-actions-bar" style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+            <a href="{% url 'doctors:doctor_detail' doctor.id %}" class="action-link button-secondary">Cancel</a>
+            <button type="submit" class="button button-success">Save Changes</button>
+        </div>
     </form>
 {% endblock content %}

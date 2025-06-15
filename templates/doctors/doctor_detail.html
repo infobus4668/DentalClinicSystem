@@ -33,7 +33,7 @@
         <strong>Last Updated:</strong> {{ doctor.updated_at }}
     </div>
 
-    <div class="main-actions-bar">
+    <div class="main-actions-bar" style="margin-top: 20px; display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 10px;">
         <a href="{% url 'doctors:doctor_list' %}" class="action-link button-secondary">Back to Doctor List</a>
         <a href="{% url 'doctors:edit_doctor' doctor.id %}" class="action-link button-warning">Edit Doctor</a>
         <a href="{% url 'doctors:delete_doctor' doctor.id %}" class="action-link button-danger">Delete Doctor</a>

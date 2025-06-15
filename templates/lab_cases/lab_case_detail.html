@@ -11,7 +11,6 @@
 </div>
 <div class="detail-item">
     <strong>Patient:</strong>
-    {# Link to the patient's main detail page for easy access #}
     <a href="{% url 'patients:patient_detail' case.patient.id %}">{{ case.patient.name }}</a>
 </div>
 <div class="detail-item">
@@ -50,7 +49,7 @@
     <strong>Record Created On:</strong> {{ case.created_at|date:"F d, Y, P" }}
 </div>
 
-<div class="main-actions-bar">
+<div class="main-actions-bar" style="margin-top: 20px; display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 10px;">
     <a href="{% url 'lab_cases:lab_case_list' %}" class="button button-secondary">Back to Lab Case List</a>
     <a href="{% url 'lab_cases:edit_lab_case' case.id %}" class="button button-warning">Edit Case</a>
     <a href="{% url 'lab_cases:delete_lab_case' case.id %}" class="button button-danger">Delete Case</a>

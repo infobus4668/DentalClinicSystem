@@ -6,16 +6,15 @@
 {% block content %}
 <h2>{{ page_title }}</h2>
 
-<div class="page-actions" style="border-top: none; padding-top: 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-    <a href="{% url 'patients:add_patient' %}" class="action-link button-primary" style="margin-bottom: 20px;">Add New Patient</a>
-
-    <form method="GET" action="{% url 'patients:patient_list' %}" class="form-inline" style="display: flex; gap: 10px; margin-bottom: 20px;">
-        <input type="text" name="q" class="form-control" placeholder="Search by name or contact..." value="{{ search_query|default:'' }}" style="width: 300px;">
-        <button type="submit" class="button button-primary">Search</button>
+<div class="page-actions" style="display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 15px;">
+    <form method="GET" action="{% url 'patients:patient_list' %}" class="form-inline" style="display: flex; gap: 10px;">
+        <input type="text" name="q" class="form-control" placeholder="Search by name or contact..." value="{{ search_query|default:'' }}" style="width: 250px;">
+        <button type="submit" class="button button-secondary">Search</button>
         {% if search_query %}
-            <a href="{% url 'patients:patient_list' %}" class="button button-secondary">Clear</a>
+            <a href="{% url 'patients:patient_list' %}" class="button button-secondary-outline">Clear</a>
         {% endif %}
     </form>
+    <a href="{% url 'patients:add_patient' %}" class="action-link button-primary">Add New Patient</a>
 </div>
 
 {% if patients_list %}
@@ -27,7 +26,8 @@
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Age</th> <th>Gender</th>
+                <th>Age</th>
+                <th>Gender</th>
                 <th>Contact Number</th>
                 <th>Place</th>
                 <th>Actions</th>
@@ -37,13 +37,14 @@
             {% for patient in patients_list %}
             <tr>
                 <td><a href="{% url 'patients:patient_detail' patient.id %}">{{ patient.name }}</a></td>
-                <td>{{ patient.age }}</td> <td>{{ patient.get_gender_display }}</td>
+                <td>{{ patient.age }}</td>
+                <td>{{ patient.get_gender_display }}</td>
                 <td>{{ patient.contact_number|default:"N/A" }}</td>
                 <td>{{ patient.place|default:"N/A" }}</td>
-                <td class="actions-column"> {# Added: Actions column for each row #}
-                        <a href="{% url 'patients:edit_patient' patient.id %}" class="button button-warning">Edit</a>
-                        <a href="{% url 'patients:delete_patient' patient.id %}" class="button button-danger">Delete</a>
-                    </td>
+                <td class="actions-column">
+                    <a href="{% url 'patients:edit_patient' patient.id %}" class="button button-warning">Edit</a>
+                    <a href="{% url 'patients:delete_patient' patient.id %}" class="button button-danger">Delete</a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

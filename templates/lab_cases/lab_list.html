@@ -1,15 +1,17 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ page_title }} - Dental Clinic MS{% endblock title %}
+{% block title %}Dental Laboratories{% endblock title %}
 
 {% block content %}
-<h2>{{ page_title }}</h2>
+<h2>Dental Laboratories</h2>
 
-<a href="{% url 'lab_cases:add_lab' %}" class="action-link button-primary">Add New Lab</a>
+<div class="page-actions" style="display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 15px;">
+    <a href="{% url 'lab_cases:add_lab' %}" class="action-link button-primary">Add New Lab</a>
+    <a href="{% url 'lab_cases:lab_case_list' %}" class="button button-secondary">Back to Lab Cases</a>
+</div>
 
 {% if labs_list %}
-    {# --- FIX: Wrap table in a responsive div --- #}
     <div class="table-responsive">
         <table>
             <thead>
@@ -42,9 +44,5 @@
 {% else %}
     <p class="no-items">No dental labs have been added to the system yet.</p>
 {% endif %}
-
-<div class="main-actions-bar">
-    <a href="{% url 'lab_cases:lab_case_list' %}" class="button button-secondary">Back to Lab Cases</a>
-</div>
 
 {% endblock content %}
