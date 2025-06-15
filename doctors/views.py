@@ -1,7 +1,7 @@
 # DENTALCLINICSYSTEM/doctors/views.py
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required # <-- THIS LINE IS ADDED
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import ProtectedError
 from .models import Doctor
@@ -36,8 +36,8 @@ def add_doctor_view(request):
 
 # View for a single doctor's details
 @login_required
-def doctor_detail_view(request, doctor_id):
-    doctor = get_object_or_404(Doctor, id=doctor_id)
+def doctor_detail_view(request, pk): # Normalized to pk
+    doctor = get_object_or_404(Doctor, pk=pk) # Normalized to pk
     context = {
         'doctor': doctor,
         'page_title': f"Details for Dr. {doctor.name}"
@@ -46,15 +46,15 @@ def doctor_detail_view(request, doctor_id):
 
 # View for editing an existing doctor
 @login_required
-def edit_doctor_view(request, doctor_id):
-    doctor_to_edit = get_object_or_404(Doctor, id=doctor_id)
+def edit_doctor_view(request, pk): # Normalized to pk
+    doctor_to_edit = get_object_or_404(Doctor, pk=pk) # Normalized to pk
 
     if request.method == 'POST':
         form = DoctorForm(request.POST, instance=doctor_to_edit)
         if form.is_valid():
             form.save()
             messages.success(request, 'Doctor details were updated successfully!')
-            return redirect('doctors:doctor_detail', doctor_id=doctor_to_edit.id)
+            return redirect('doctors:doctor_detail', pk=doctor_to_edit.pk) # Normalized to pk
     else:
         form = DoctorForm(instance=doctor_to_edit)
 
@@ -67,8 +67,8 @@ def edit_doctor_view(request, doctor_id):
 
 # View for deleting an existing doctor (handles confirmation)
 @login_required
-def delete_doctor_view(request, doctor_id):
-    doctor_to_delete = get_object_or_404(Doctor, id=doctor_id)
+def delete_doctor_view(request, pk): # Normalized to pk
+    doctor_to_delete = get_object_or_404(Doctor, pk=pk) # Normalized to pk
 
     if request.method == 'POST':
         try:

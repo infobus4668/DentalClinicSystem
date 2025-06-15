@@ -25,14 +25,14 @@
             <tbody>
                 {% for doctor in doctors_list %}
                 <tr>
-                    <td><a href="{% url 'doctors:doctor_detail' doctor.id %}">Dr. {{ doctor.name }}</a></td>
+                    <td><a href="{% url 'doctors:doctor_detail' doctor.pk %}">Dr. {{ doctor.name }}</a></td>
                     <td>{{ doctor.get_specialization_display }}</td>
                     <td>{{ doctor.contact_number }}</td>
                     <td>{{ doctor.email|default:"N/A" }}</td>
                     <td>{{ doctor.availability_notes|default:"N/A" }}</td>
                     <td class="actions-column">
-                        <a href="{% url 'doctors:edit_doctor' doctor.id %}" class="button button-warning">Edit</a>
-                        <a href="{% url 'doctors:delete_doctor' doctor.id %}" class="button button-danger">Delete</a>
+                        <a href="{% url 'doctors:edit_doctor' doctor.pk %}" class="button button-warning">Edit</a>
+                        <a href="{% url 'doctors:delete_doctor' doctor.pk %}" class="button button-danger">Delete</a>
                     </td>
                 </tr>
                 {% endfor %}

@@ -8,7 +8,7 @@
     <p>This action cannot be undone.</p>
 
     <div style="margin-top: 20px; display: flex; justify-content: flex-end; align-items: center; gap: 10px;">
-        <a href="{% url 'patients:patient_detail' patient.id %}" class="action-link button-secondary">Cancel</a>
+        <a href="{% url 'patients:patient_detail' patient.pk %}" class="action-link button-secondary">Cancel</a>
         <form method="POST" style="display: inline;">
             {% csrf_token %}
             <button type="submit" class="button button-danger">Yes, Delete Patient</button>

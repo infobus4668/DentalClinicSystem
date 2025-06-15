@@ -32,18 +32,18 @@ def get_invoice_context_data():
     for p in products:
         available_batches = [
             {
-                'id': batch.id,
+                'id': batch.pk, # Changed from batch.id
                 'name': f"Batch: {batch.batch_number or 'N/A'} | Avail: {batch.quantity_available} | Cost: {batch.cost_price}",
                 'available': batch.quantity_available
             }
             for batch in p.stock_items.all() if batch.quantity_available > 0
         ]
         if available_batches:
-            products_with_batches[p.id] = available_batches
+            products_with_batches[p.pk] = available_batches # Changed from p.id
 
     js_data = {
-        'services': {s.id: str(s.price) for s in Service.objects.filter(is_active=True)},
-        'products': {p.id: {'price': str(p.price)} for p in products},
+        'services': {s.pk: str(s.price) for s in Service.objects.filter(is_active=True)}, # Changed from s.id
+        'products': {p.pk: {'price': str(p.price)} for p in products}, # Changed from p.id
         'batches': products_with_batches
     }
     return js_data
@@ -54,10 +54,10 @@ def get_invoice_context_data():
 def create_invoice_view(request, appointment_id=None):
     initial_data = {}
     if appointment_id:
-        appointment = get_object_or_404(Appointment, id=appointment_id)
+        appointment = get_object_or_404(Appointment, pk=appointment_id) # Changed from id=appointment_id
         if hasattr(appointment, 'invoice'):
             messages.warning(request, "An invoice already exists for this appointment.")
-            return redirect('billing:invoice_detail', invoice_id=appointment.invoice.id)
+            return redirect('billing:invoice_detail', invoice_id=appointment.invoice.pk) # Changed from appointment.invoice.id
         initial_data = {
             'patient': appointment.patient,
             'doctor': appointment.doctor,
@@ -68,7 +68,7 @@ def create_invoice_view(request, appointment_id=None):
         patient_id = request.GET.get('patient_id')
         if patient_id:
             try:
-                patient = Patient.objects.get(id=patient_id)
+                patient = Patient.objects.get(pk=patient_id) # Changed from id=patient_id
                 initial_data['patient'] = patient
             except Patient.DoesNotExist:
                 pass
@@ -87,7 +87,7 @@ def create_invoice_view(request, appointment_id=None):
                 invoice.save()
 
             messages.success(request, f'Invoice {invoice.invoice_number} created successfully!')
-            return redirect('billing:invoice_detail', invoice_id=invoice.id)
+            return redirect('billing:invoice_detail', invoice_id=invoice.pk) # Changed from invoice.id
         else:
             messages.error(request, "Please correct the errors below.")
     else:
@@ -106,7 +106,7 @@ def create_invoice_view(request, appointment_id=None):
 @login_required
 @role_required(allowed_roles=BILLING_ROLES)
 def edit_invoice_view(request, invoice_id):
-    invoice = get_object_or_404(Invoice, id=invoice_id)
+    invoice = get_object_or_404(Invoice, pk=invoice_id) # Changed from id=invoice_id
 
     if request.method == 'POST':
         invoice_form = InvoiceForm(request.POST, instance=invoice, prefix='invoice')
@@ -121,7 +121,7 @@ def edit_invoice_view(request, invoice_id):
                 invoice.save()
 
             messages.success(request, f'Invoice {invoice.invoice_number} updated successfully!')
-            return redirect('billing:invoice_detail', invoice_id=invoice.id)
+            return redirect('billing:invoice_detail', invoice_id=invoice.pk) # Changed from invoice.id
         else:
             messages.error(request, "Please correct the errors below.")
     else:
@@ -161,7 +161,7 @@ def invoice_list_view(request):
 @login_required
 @role_required(allowed_roles=BILLING_ROLES)
 def invoice_detail_view(request, invoice_id):
-    invoice = get_object_or_404(Invoice, id=invoice_id)
+    invoice = get_object_or_404(Invoice, pk=invoice_id) # Changed from id=invoice_id
     invoice_items = invoice.invoice_items.all()
     context = {
         'invoice': invoice,
@@ -174,7 +174,7 @@ def invoice_detail_view(request, invoice_id):
 @login_required
 @role_required(allowed_roles=['MANAGER']) # Only managers can delete invoices
 def delete_invoice_view(request, invoice_id):
-    invoice = get_object_or_404(Invoice, id=invoice_id)
+    invoice = get_object_or_404(Invoice, pk=invoice_id) # Changed from id=invoice_id
     if request.method == 'POST':
         invoice.delete()
         messages.success(request, f'Invoice {invoice.invoice_number} deleted successfully!')
@@ -186,7 +186,7 @@ def delete_invoice_view(request, invoice_id):
 @login_required
 @role_required(allowed_roles=BILLING_ROLES)
 def invoice_print_view(request, invoice_id):
-    invoice = get_object_or_404(Invoice, id=invoice_id)
+    invoice = get_object_or_404(Invoice, pk=invoice_id) # Changed from id=invoice_id
     invoice_items = invoice.invoice_items.all()
     context = {
         'invoice': invoice,
@@ -253,7 +253,7 @@ def purchase_order_create_view(request):
                     item.save()
                 purchase_order.update_total_amount()
                 messages.success(request, 'Purchase Order created successfully.')
-                return redirect('billing:purchase_order_detail', po_id=purchase_order.id)
+                return redirect('billing:purchase_order_detail', po_id=purchase_order.pk) # Changed from purchase_order.id
         else:
             messages.error(request, "Please correct the errors below.")
     else:
@@ -270,7 +270,7 @@ def purchase_order_create_view(request):
 @login_required
 @role_required(allowed_roles=BILLING_ROLES)
 def purchase_order_detail_view(request, po_id):
-    purchase_order = get_object_or_404(PurchaseOrder.objects.prefetch_related('items__product'), id=po_id)
+    purchase_order = get_object_or_404(PurchaseOrder.objects.prefetch_related('items__product'), pk=po_id) # Changed from id=po_id
     amount_paid = purchase_order.payments.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
     balance = purchase_order.total_amount - amount_paid
     items_to_receive = any(not item.is_fully_received for item in purchase_order.items.all())
@@ -279,7 +279,7 @@ def purchase_order_detail_view(request, po_id):
         'amount_paid': amount_paid,
         'balance': balance,
         'items_to_receive': items_to_receive,
-        'page_title': f'Details for PO #{purchase_order.id}'
+        'page_title': f'Details for PO #{purchase_order.pk}' # Changed from purchase_order.id
     }
     return render(request, 'billing/purchase_order_detail.html', context)
 
@@ -287,7 +287,7 @@ def purchase_order_detail_view(request, po_id):
 @login_required
 @role_required(allowed_roles=BILLING_ROLES)
 def purchase_order_edit_view(request, po_id):
-    purchase_order = get_object_or_404(PurchaseOrder, id=po_id)
+    purchase_order = get_object_or_404(PurchaseOrder, pk=po_id) # Changed from id=po_id
     if purchase_order.status != 'PENDING':
         messages.error(request, 'Cannot edit an order that has been partially or fully received.')
         return redirect('billing:purchase_order_detail', po_id=po_id)
@@ -300,7 +300,7 @@ def purchase_order_edit_view(request, po_id):
                 formset.save()
                 purchase_order.update_total_amount()
                 messages.success(request, 'Purchase Order updated successfully.')
-                return redirect('billing:purchase_order_detail', po_id=purchase_order.id)
+                return redirect('billing:purchase_order_detail', po_id=purchase_order.pk) # Changed from purchase_order.id
         else:
             messages.error(request, "Please correct the errors below.")
     else:
@@ -310,7 +310,7 @@ def purchase_order_edit_view(request, po_id):
         'form': form,
         'formset': formset,
         'po': purchase_order,
-        'page_title': f'Edit Purchase Order #{purchase_order.id}'
+        'page_title': f'Edit Purchase Order #{purchase_order.pk}' # Changed from purchase_order.id
     }
     return render(request, 'billing/purchase_order_form.html', context)
 
@@ -318,7 +318,7 @@ def purchase_order_edit_view(request, po_id):
 @login_required
 @role_required(allowed_roles=BILLING_ROLES)
 def receive_purchase_order_view(request, po_id):
-    purchase_order = get_object_or_404(PurchaseOrder.objects.prefetch_related('items__product'), id=po_id)
+    purchase_order = get_object_or_404(PurchaseOrder.objects.prefetch_related('items__product'), pk=po_id) # Changed from id=po_id
     items_to_receive = purchase_order.items.filter(quantity_received__lt=F('quantity'))
     if not items_to_receive.exists():
         messages.warning(request, "This purchase order has already been fully received.")
@@ -332,7 +332,7 @@ def receive_purchase_order_view(request, po_id):
                     quantity_now = form.cleaned_data.get('quantity_to_receive') or 0
                     if not po_item_id or quantity_now <= 0:
                         continue
-                    po_item = get_object_or_404(PurchaseOrderItem, id=po_item_id)
+                    po_item = get_object_or_404(PurchaseOrderItem, pk=po_item_id) # Changed from id=po_item_id
                     StockItem.objects.create(
                         product=po_item.product,
                         supplier=purchase_order.supplier,
@@ -342,20 +342,20 @@ def receive_purchase_order_view(request, po_id):
                         batch_number=form.cleaned_data.get('batch_number'),
                         expiry_date=form.cleaned_data.get('expiry_date')
                     )
-                    PurchaseOrderItem.objects.filter(id=po_item.id).update(quantity_received=F('quantity_received') + quantity_now)
+                    PurchaseOrderItem.objects.filter(pk=po_item.pk).update(quantity_received=F('quantity_received') + quantity_now) # Changed from id=po_item.id
 
                 purchase_order.update_status()
                 messages.success(request, "Stock received and inventory updated successfully.")
-                return redirect('billing:purchase_order_detail', po_id=purchase_order.id)
+                return redirect('billing:purchase_order_detail', po_id=purchase_order.pk) # Changed from purchase_order.id
     else:
-        initial_data = [{'purchase_order_item_id': item.id} for item in items_to_receive]
+        initial_data = [{'purchase_order_item_id': item.pk} for item in items_to_receive] # Changed from item.id
         formset = ReceiveStockFormSet(initial=initial_data, prefix='receive')
     forms_with_items = zip(formset, items_to_receive)
     context = {
         'purchase_order': purchase_order,
         'formset': formset,
         'forms_with_items': forms_with_items,
-        'page_title': f'Receive Stock for PO #{purchase_order.id}'
+        'page_title': f'Receive Stock for PO #{purchase_order.pk}' # Changed from purchase_order.id
     }
     return render(request, 'billing/receive_purchase_order.html', context)
 
@@ -363,7 +363,7 @@ def receive_purchase_order_view(request, po_id):
 @login_required
 @role_required(allowed_roles=BILLING_ROLES)
 def add_supplier_payment_view(request, po_id):
-    purchase_order = get_object_or_404(PurchaseOrder, id=po_id)
+    purchase_order = get_object_or_404(PurchaseOrder, pk=po_id) # Changed from id=po_id
     if request.method == 'POST':
         form = SupplierPaymentForm(request.POST)
         if form.is_valid():
@@ -371,13 +371,13 @@ def add_supplier_payment_view(request, po_id):
             payment.purchase_order = purchase_order
             payment.save()
             messages.success(request, f'Payment of ₹{payment.amount} recorded successfully.')
-            return redirect('billing:purchase_order_detail', po_id=purchase_order.id)
+            return redirect('billing:purchase_order_detail', po_id=purchase_order.pk) # Changed from purchase_order.id
     else:
         form = SupplierPaymentForm()
     context = {
         'form': form,
         'purchase_order': purchase_order,
-        'page_title': f'Add Payment for PO #{purchase_order.id}'
+        'page_title': f'Add Payment for PO #{purchase_order.pk}' # Changed from purchase_order.id
     }
     return render(request, 'billing/add_supplier_payment.html', context)
 
@@ -414,7 +414,7 @@ def add_supplier_view(request):
 @login_required
 @role_required(allowed_roles=BILLING_ROLES)
 def edit_supplier_view(request, supplier_id):
-    supplier = get_object_or_404(Supplier, id=supplier_id)
+    supplier = get_object_or_404(Supplier, pk=supplier_id) # Changed from id=supplier_id
     if request.method == 'POST':
         form = SupplierForm(request.POST, instance=supplier)
         if form.is_valid():
@@ -434,7 +434,7 @@ def edit_supplier_view(request, supplier_id):
 @login_required
 @role_required(allowed_roles=['MANAGER']) # Only managers can delete suppliers
 def delete_supplier_view(request, supplier_id):
-    supplier = get_object_or_404(Supplier, id=supplier_id)
+    supplier = get_object_or_404(Supplier, pk=supplier_id) # Changed from id=supplier_id
     if request.method == 'POST':
         supplier.delete()
         messages.success(request, 'Supplier deleted successfully!')
@@ -478,7 +478,7 @@ def add_service_view(request):
 @login_required
 @role_required(allowed_roles=BILLING_ROLES)
 def edit_service_view(request, service_id):
-    service = get_object_or_404(Service, id=service_id)
+    service = get_object_or_404(Service, pk=service_id) # Changed from id=service_id
     if request.method == 'POST':
         form = ServiceForm(request.POST, instance=service)
         if form.is_valid():
@@ -498,7 +498,7 @@ def edit_service_view(request, service_id):
 @login_required
 @role_required(allowed_roles=['MANAGER']) # Only managers can delete services
 def delete_service_view(request, service_id):
-    service = get_object_or_404(Service, id=service_id)
+    service = get_object_or_404(Service, pk=service_id) # Changed from id=service_id
     if request.method == 'POST':
         service.delete()
         messages.success(request, 'Service deleted successfully!')
@@ -542,7 +542,7 @@ def add_product_view(request):
 @login_required
 @role_required(allowed_roles=BILLING_ROLES)
 def edit_product_view(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
+    product = get_object_or_404(Product, pk=product_id) # Changed from id=product_id
     if request.method == 'POST':
         form = ProductForm(request.POST, instance=product)
         if form.is_valid():
@@ -562,7 +562,7 @@ def edit_product_view(request, product_id):
 @login_required
 @role_required(allowed_roles=['MANAGER']) # Only managers can delete products
 def delete_product_view(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
+    product = get_object_or_404(Product, pk=product_id) # Changed from id=product_id
     if request.method == 'POST':
         product.delete()
         messages.success(request, 'Product deleted successfully!')

@@ -15,7 +15,7 @@
         {% include "includes/form_fields.html" %}
         <div class="form-actions">
             <button type="submit" class="button button-primary">Record Payment</button>
-            <a href="{% url 'billing:purchase_order_detail' purchase_order.id %}" class="button button-secondary">Cancel</a>
+            <a href="{% url 'billing:purchase_order_detail' pk=purchase_order.pk %}" class="button button-secondary">Cancel</a>
         </div>
     </form>
 </div>

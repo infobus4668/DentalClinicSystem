@@ -57,11 +57,11 @@
 <div class="main-actions-bar">
     <a href="{% url 'billing:purchase_order_list' %}" class="button button-secondary">Back to Purchase Orders</a>
     {% if items_to_receive %}
-        <a href="{% url 'billing:receive_purchase_order' po.id %}" class="button button-success">Receive Stock</a>
+        <a href="{% url 'billing:receive_purchase_order' po.pk %}" class="button button-success">Receive Stock</a>
     {% endif %}
-    <a href="{% url 'billing:add_supplier_payment' po.id %}" class="button button-primary">Add Payment</a>
+    <a href="{% url 'billing:add_supplier_payment' po.pk %}" class="button button-primary">Add Payment</a>
     {% if po.status == 'PENDING' %}
-        <a href="{% url 'billing:purchase_order_edit' po.id %}" class="button button-warning">Edit Order</a>
+        <a href="{% url 'billing:purchase_order_edit' po.pk %}" class="button button-warning">Edit Order</a>
     {% endif %}
 </div>
 {% endblock content %}

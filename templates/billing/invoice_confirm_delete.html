@@ -25,5 +25,5 @@
         {% csrf_token %}
         <button type="submit" class="button button-danger">Yes, Delete Invoice</button>
     </form>
-    <a href="{% url 'billing:invoice_detail' invoice.id %}" class="action-link button-secondary">Cancel</a>
+    <a href="{% url 'billing:invoice_detail' pk=invoice.pk %}" class="action-link button-secondary">Cancel</a>
 {% endblock content %}

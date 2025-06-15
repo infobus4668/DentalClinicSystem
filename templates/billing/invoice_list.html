@@ -67,7 +67,7 @@
             <tbody>
                 {% for invoice in invoices_list %}
                 <tr>
-                    <td><a href="{% url 'billing:invoice_detail' invoice.id %}">{{ invoice.invoice_number }}</a></td>
+                    <td><a href="{% url 'billing:invoice_detail' invoice.pk %}">{{ invoice.invoice_number }}</a></td>
                     <td>{{ invoice.patient.name }}</td>
                     <td>{{ invoice.doctor.name|default:"N/A" }}</td>
                     <td>{{ invoice.invoice_date }}</td>
@@ -76,8 +76,8 @@
                     <td>₹{{ invoice.balance_due|floatformat:2 }}</td>
                     <td><span class="status-badge status-{{ invoice.status }}">{{ invoice.get_status_display }}</span></td>
                     <td class="actions-column">
-                        <a href="{% url 'billing:edit_invoice' invoice.id %}" class="action-link button-warning edit-link" rel="nofollow">Edit</a>
-                        <a href="{% url 'billing:delete_invoice' invoice.id %}" class="action-link button-danger delete-link" rel="nofollow">Delete</a>
+                        <a href="{% url 'billing:edit_invoice' invoice.pk %}" class="action-link button-warning edit-link" rel="nofollow">Edit</a>
+                        <a href="{% url 'billing:delete_invoice' invoice.pk %}" class="action-link button-danger delete-link" rel="nofollow">Delete</a>
                     </td>
                 </tr>
                 {% endfor %}

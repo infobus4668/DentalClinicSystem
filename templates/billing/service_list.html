@@ -28,8 +28,8 @@
                     <td>₹{{ service.price|floatformat:2 }}</td>
                     <td>{% if service.is_active %}Yes{% else %}No{% endif %}</td>
                     <td>
-                        <a href="{% url 'billing:edit_service' service.id %}" class="action-link button-warning edit-link">Edit</a>
-                        <a href="{% url 'billing:delete_service' service.id %}" class="action-link button-danger delete-link">Delete</a>
+                        <a href="{% url 'billing:edit_service' service.pk %}" class="action-link button-warning edit-link">Edit</a>
+                        <a href="{% url 'billing:delete_service' service.pk %}" class="action-link button-danger delete-link">Delete</a>
                     </td>
                 </tr>
                 {% endfor %}

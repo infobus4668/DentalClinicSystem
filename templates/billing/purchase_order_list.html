@@ -26,13 +26,13 @@
             <tbody>
                 {% for po in purchase_orders_list %}
                 <tr>
-                    <td>{{ po.id }}</td>
+                    <td>{{ po.pk }}</td>
                     <td>{{ po.supplier.name }}</td>
                     <td>{{ po.order_date|date:"M d, Y" }}</td>
                     <td class="text-right">₹{{ po.total_amount|floatformat:2 }}</td>
                     <td><span class="status-badge status-{{ po.status }}">{{ po.get_status_display }}</span></td>
                     <td class="actions-column">
-                        <a href="{% url 'billing:purchase_order_detail' po.id %}" class="button button-info">Details</a>
+                        <a href="{% url 'billing:purchase_order_detail' po.pk %}" class="button button-info">Details</a>
                     </td>
                 </tr>
                 {% endfor %}

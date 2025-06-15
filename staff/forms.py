@@ -32,16 +32,16 @@ class StaffMemberForm(forms.ModelForm):
         instance = self.instance
 
         # Get all user IDs that are already taken and should be excluded.
-        excluded_ids = list(User.objects.filter(is_superuser=True).values_list('id', flat=True))
-        excluded_ids.extend(list(Doctor.objects.filter(user__isnull=False).values_list('user__id', flat=True)))
+        excluded_ids = list(User.objects.filter(is_superuser=True).values_list('pk', flat=True))
+        excluded_ids.extend(list(Doctor.objects.filter(user__isnull=False).values_list('user__pk', flat=True)))
         
         other_staff = StaffMember.objects.filter(user__isnull=False)
         if instance and instance.pk:
             other_staff = other_staff.exclude(pk=instance.pk)
-        excluded_ids.extend(list(other_staff.values_list('user__id', flat=True)))
+        excluded_ids.extend(list(other_staff.values_list('user__pk', flat=True)))
 
         self.fields['user'].queryset = User.objects.filter(
             is_active=True
         ).exclude(
-            id__in=set(excluded_ids)
+            pk__in=set(excluded_ids)
         )

@@ -6,7 +6,7 @@
     <h2>{{ page_title }}</h2>
 
     <div class="detail-item">
-        <strong>Doctor ID:</strong> {{ doctor.id }}
+        <strong>Doctor ID:</strong> {{ doctor.pk }}
     </div>
     <div class="detail-item">
         <strong>Name:</strong> Dr. {{ doctor.name }}
@@ -35,7 +35,7 @@
 
     <div class="main-actions-bar" style="margin-top: 20px; display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 10px;">
         <a href="{% url 'doctors:doctor_list' %}" class="action-link button-secondary">Back to Doctor List</a>
-        <a href="{% url 'doctors:edit_doctor' doctor.id %}" class="action-link button-warning">Edit Doctor</a>
-        <a href="{% url 'doctors:delete_doctor' doctor.id %}" class="action-link button-danger">Delete Doctor</a>
+        <a href="{% url 'doctors:edit_doctor' doctor.pk %}" class="action-link button-warning">Edit Doctor</a>
+        <a href="{% url 'doctors:delete_doctor' doctor.pk %}" class="action-link button-danger">Delete Doctor</a>
     </div>
 {% endblock content %}

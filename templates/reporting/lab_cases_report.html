@@ -49,7 +49,7 @@
                 <tr>
                     <td>{{ case.date_sent|date:"Y-m-d" }}</td>
                     <td>{{ case.patient.name }}</td>
-                    <td><a href="{% url 'lab_cases:lab_case_detail' case.id %}">{{ case.case_type }}</a></td>
+                    <td><a href="{% url 'lab_cases:lab_case_detail' case.pk %}">{{ case.case_type }}</a></td>
                     <td>{{ case.lab.name }}</td>
                     <td><span class="status-badge status-{{ case.status }}">{{ case.get_status_display }}</span></td>
                     <td class="text-right">₹{{ case.cost|floatformat:2|default:"0.00" }}</td>

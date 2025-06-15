@@ -85,8 +85,8 @@ class BatchAwareSellingTests(TestCase):
             'items-MIN_NUM_FORMS': '0',
             'items-MAX_NUM_FORMS': '1000',
             'items-0-service': '',  # No service selected
-            'items-0-product': str(self.product.id),  # Required for dynamic filtering in form
-            'items-0-stock_item': str(self.batch1.id),
+            'items-0-product': str(self.product.pk),  # Changed from self.product.id
+            'items-0-stock_item': str(self.batch1.pk), # Changed from self.batch1.id
             'items-0-description': 'Test product sale',
             'items-0-quantity': '11',  # Above batch1 quantity_available which is 10
             'items-0-unit_price': '100.00',

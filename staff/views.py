@@ -40,7 +40,7 @@ def add_staff_member_view(request):
 @login_required
 @role_required(allowed_roles=['MANAGER'])
 def staff_detail_view(request, staff_member_id):
-    staff_member = get_object_or_404(StaffMember, id=staff_member_id)
+    staff_member = get_object_or_404(StaffMember, pk=staff_member_id)
     context = {
         'staff_member': staff_member,
         'page_title': f"Details for {staff_member.name}"
@@ -51,13 +51,13 @@ def staff_detail_view(request, staff_member_id):
 @login_required
 @role_required(allowed_roles=['MANAGER'])
 def edit_staff_member_view(request, staff_member_id):
-    staff_member_to_edit = get_object_or_404(StaffMember, id=staff_member_id)
+    staff_member_to_edit = get_object_or_404(StaffMember, pk=staff_member_id)
 
     if request.method == 'POST':
         form = StaffMemberForm(request.POST, instance=staff_member_to_edit)
         if form.is_valid():
             form.save()
-            return redirect('staff:staff_detail', staff_member_id=staff_member_to_edit.id)
+            return redirect('staff:staff_detail', staff_member_id=staff_member_to_edit.pk)
     else:
         form = StaffMemberForm(instance=staff_member_to_edit)
 
@@ -72,7 +72,7 @@ def edit_staff_member_view(request, staff_member_id):
 @login_required
 @role_required(allowed_roles=['MANAGER'])
 def delete_staff_member_view(request, staff_member_id):
-    staff_member_to_delete = get_object_or_404(StaffMember, id=staff_member_id)
+    staff_member_to_delete = get_object_or_404(StaffMember, pk=staff_member_id)
 
     if request.method == 'POST':
         staff_member_to_delete.delete()

@@ -9,15 +9,15 @@
         <strong>Invoice Number:</strong> {{ invoice.invoice_number }}
     </div>
     <div class="detail-item">
-        <strong>Patient:</strong> <a href="{% url 'patients:patient_detail' invoice.patient.id %}">{{ invoice.patient.name }}</a>
+        <strong>Patient:</strong> <a href="{% url 'patients:patient_detail' invoice.patient.pk %}">{{ invoice.patient.name }}</a>
     </div>
     <div class="detail-item">
-        <strong>Doctor:</strong> {% if invoice.doctor %}<a href="{% url 'doctors:doctor_detail' invoice.doctor.id %}">Dr. {{ invoice.doctor.name }}</a>{% else %}N/A{% endif %}
+        <strong>Doctor:</strong> {% if invoice.doctor %}<a href="{% url 'doctors:doctor_detail' invoice.doctor.pk %}">Dr. {{ invoice.doctor.name }}</a>{% else %}N/A{% endif %}
     </div>
     <div class="detail-item">
         <strong>Appointment:</strong>
         {% if invoice.appointment %}
-            <a href="{% url 'appointments:appointment_detail' invoice.appointment.id %}">
+            <a href="{% url 'appointments:appointment_detail' invoice.appointment.pk %}">
                 {{ invoice.appointment.appointment_datetime|date:"F j, Y, P" }}
             </a>
         {% else %}
@@ -100,13 +100,13 @@
 
     <div class="main-actions-bar">
         <a href="{% url 'billing:invoice_list' %}" class="action-link button-secondary">Back to Invoices</a>
-        <a href="{% url 'billing:edit_invoice' invoice.id %}" class="action-link button-warning">Edit Invoice</a>
-        <a href="{% url 'billing:invoice_print' invoice.id %}" target="_blank" class="action-link button-info">Print Simple Invoice</a>
+        <a href="{% url 'billing:edit_invoice' invoice.pk %}" class="action-link button-warning">Edit Invoice</a>
+        <a href="{% url 'billing:invoice_print' invoice.pk %}" target="_blank" class="action-link button-info">Print Simple Invoice</a>
 
         {% if invoice.appointment %}
-        <a href="{% url 'appointments:print_bill_summary' invoice.appointment.id %}" target="_blank" class="action-link button-primary">Print Full Bill & Summary</a>
+        <a href="{% url 'appointments:print_bill_summary' invoice.appointment.pk %}" target="_blank" class="action-link button-primary">Print Full Bill & Summary</a>
         {% endif %}
 
-        <a href="{% url 'billing:delete_invoice' invoice.id %}" class="action-link button-danger">Delete Invoice</a>
+        <a href="{% url 'billing:delete_invoice' invoice.pk %}" class="action-link button-danger">Delete Invoice</a>
     </div>
 {% endblock content %}

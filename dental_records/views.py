@@ -16,12 +16,12 @@ DENTAL_STAFF_ROLES = ['MANAGER', 'DOCTOR', 'ASSIST', 'HYGIEN']
 @login_required
 # MODIFIED: Using the correct decorator with the appropriate roles
 @role_required(DENTAL_STAFF_ROLES)
-def manage_dental_record_view(request, appointment_id):
+def manage_dental_record_view(request, appointment_pk):
     """
     This view handles Creating or Editing the main DentalRecord
     (clinical notes, treatments) and uploading associated images.
     """
-    appointment = get_object_or_404(Appointment, id=appointment_id)
+    appointment = get_object_or_404(Appointment, pk=appointment_pk)
     # The record is linked to the appointment, so we get_or_create based on that
     record, created = DentalRecord.objects.get_or_create(appointment=appointment)
 
@@ -39,7 +39,7 @@ def manage_dental_record_view(request, appointment_id):
                 messages.success(request, 'Image uploaded successfully!')
             else:
                 messages.error(request, 'No image file was selected.')
-            return redirect('dental_records:manage_dental_record', appointment_id=appointment.id)
+            return redirect('dental_records:manage_dental_record', appointment_pk=appointment.pk)
 
         # If not an image upload, process the main dental record form
         else:
@@ -47,7 +47,7 @@ def manage_dental_record_view(request, appointment_id):
             if form.is_valid():
                 form.save()
                 messages.success(request, 'Dental record saved successfully!')
-                return redirect('appointments:appointment_detail', appointment_id=appointment.id)
+                return redirect('appointments:appointment_detail', pk=appointment.pk)
     else: # GET request
         form = DentalRecordForm(instance=record)
 
@@ -63,12 +63,12 @@ def manage_dental_record_view(request, appointment_id):
 @login_required
 # MODIFIED: Using the correct decorator with the appropriate roles
 @role_required(DENTAL_STAFF_ROLES)
-def manage_prescription_view(request, appointment_id):
+def manage_prescription_view(request, appointment_pk):
     """
     This view handles Creating or Editing a Prescription and its Items
     for a specific appointment.
     """
-    appointment = get_object_or_404(Appointment, id=appointment_id)
+    appointment = get_object_or_404(Appointment, pk=appointment_pk)
     dental_record, __ = DentalRecord.objects.get_or_create(appointment=appointment)
 
     # A prescription is linked to the dental record.
@@ -96,7 +96,7 @@ def manage_prescription_view(request, appointment_id):
                     item_formset.save()
                     
                     messages.success(request, 'Prescription saved successfully!')
-                    return redirect(reverse('appointments:appointment_detail', kwargs={'appointment_id': appointment.id}))
+                    return redirect(reverse('appointments:appointment_detail', kwargs={'pk': appointment.pk}))
             except Exception as e:
                 messages.error(request, f"An error occurred while saving the prescription: {e}")
 
@@ -119,7 +119,7 @@ def manage_prescription_view(request, appointment_id):
 @login_required
 # MODIFIED: Using the correct decorator with the appropriate roles
 @role_required(DENTAL_STAFF_ROLES)
-def prescription_print_view(request, prescription_id):
+def prescription_print_view(request, prescription_pk):
     """
     Generates a printable view for a single prescription.
     """
@@ -128,7 +128,7 @@ def prescription_print_view(request, prescription_id):
             'dental_record__appointment__patient',
             'dental_record__appointment__doctor'
         ),
-        pk=prescription_id
+        pk=prescription_pk
     )
     prescription_items = prescription.items.all()
 

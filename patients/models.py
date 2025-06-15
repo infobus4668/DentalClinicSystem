@@ -35,7 +35,7 @@ class Patient(models.Model):
         return None
 
     def __str__(self):
-        return f"{self.name} (ID: {self.pk})"
+        return f"{self.name} (ID: {self.pk})" # Normalized to pk
 
     class Meta:
         ordering = ['name']

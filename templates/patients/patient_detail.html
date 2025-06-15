@@ -4,15 +4,15 @@
 
 {% block content %}
     <div class="main-actions-bar" style="border-top: none; padding-top: 0; display: flex; justify-content: flex-end; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-        <a href="{% url 'patients:edit_patient' patient.id %}" class="action-link button-warning">Edit Patient Details</a>
-        <a href="{% url 'appointments:schedule_appointment' %}?patient_id={{ patient.id }}" class="action-link button-success">Schedule New Appointment</a>
-        <a href="{% url 'billing:create_invoice' %}?patient_id={{ patient.id }}" class="action-link button-info">Create Invoice</a>
+        <a href="{% url 'patients:edit_patient' patient.pk %}" class="action-link button-warning">Edit Patient Details</a>
+        <a href="{% url 'appointments:schedule_appointment' %}?patient_id={{ patient.pk }}" class="action-link button-success">Schedule New Appointment</a>
+        <a href="{% url 'billing:create_invoice' %}?patient_id={{ patient.pk }}" class="action-link button-info">Create Invoice</a>
     </div>
 
     <h2>Patient Information</h2>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
         <div>
-            <div class="detail-item"><strong>Patient ID:</strong> {{ patient.id }}</div>
+            <div class="detail-item"><strong>Patient ID:</strong> {{ patient.pk }}</div>
             <div class="detail-item"><strong>Name:</strong> {{ patient.name }}</div>
             <div class="detail-item"><strong>Date of Birth:</strong> {{ patient.date_of_birth|date:"F d, Y" }}</div>
             <div class="detail-item"><strong>Age:</strong> {{ patient.age }} years</div>
@@ -106,7 +106,7 @@
 
     <div class="main-actions-bar" style="margin-top: 20px; display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 10px;">
         <a href="{% url 'patients:patient_list' %}" class="action-link button-secondary">Back to Patient List</a>
-        <form method="POST" action="{% url 'patients:delete_patient' patient.id %}" style="display: inline;">
+        <form method="POST" action="{% url 'patients:delete_patient' patient.pk %}" style="display: inline;">
             {% csrf_token %}
             <button type="submit" class="button button-danger">Delete Patient</button>
         </form>

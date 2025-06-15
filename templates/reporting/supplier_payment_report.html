@@ -47,7 +47,7 @@
                 <tr>
                     <td>{{ payment.payment_date|date:"Y-m-d" }}</td>
                     <td>{{ payment.purchase_order.supplier.name }}</td>
-                    <td><a href="{% url 'billing:purchase_order_detail' payment.purchase_order.id %}">{{ payment.purchase_order.id }}</a></td>
+                    <td><a href="{% url 'billing:purchase_order_detail' payment.purchase_order.pk %}">{{ payment.purchase_order.pk }}</a></td>
                     <td>{{ payment.get_payment_method_display }}</td>
                     <td class="text-right">₹{{ payment.amount|floatformat:2 }}</td>
                 </tr>

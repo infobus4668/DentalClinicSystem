@@ -82,9 +82,9 @@ class PrescriptionItem(models.Model):
         verbose_name_plural = "Prescription Items"
 
 def dental_image_path(instance, filename):
-    # file will be uploaded to MEDIA_ROOT/patient_images/patient_<id>/<filename>
-    patient_id = instance.dental_record.appointment.patient.id
-    return f'patient_images/patient_{patient_id}/{filename}'
+    # file will be uploaded to MEDIA_ROOT/patient_images/patient_<pk>/<filename>
+    patient_pk = instance.dental_record.appointment.patient.pk
+    return f'patient_images/patient_{patient_pk}/{filename}'
 
 class DentalImage(models.Model):
     dental_record = models.ForeignKey(

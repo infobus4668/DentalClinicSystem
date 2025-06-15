@@ -38,8 +38,8 @@
                     <td class="text-center">{{ product.low_stock_threshold }}</td>
                     <td>{% if product.is_active %}Active{% else %}Inactive{% endif %}</td>
                     <td class="actions-column">
-                        <a href="{% url 'billing:edit_product' product.id %}" class="button button-warning">Edit</a>
-                        <a href="{% url 'billing:delete_product' product.id %}" class="button button-danger">Delete</a>
+                        <a href="{% url 'billing:edit_product' product.pk %}" class="button button-warning">Edit</a>
+                        <a href="{% url 'billing:delete_product' product.pk %}" class="button button-danger">Delete</a>
                     </td>
                 </tr>
                 {% endfor %}

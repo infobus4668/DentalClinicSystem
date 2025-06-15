@@ -36,14 +36,14 @@
         <tbody>
             {% for patient in patients_list %}
             <tr>
-                <td><a href="{% url 'patients:patient_detail' patient.id %}">{{ patient.name }}</a></td>
+                <td><a href="{% url 'patients:patient_detail' patient.pk %}">{{ patient.name }}</a></td>
                 <td>{{ patient.age }}</td>
                 <td>{{ patient.get_gender_display }}</td>
                 <td>{{ patient.contact_number|default:"N/A" }}</td>
                 <td>{{ patient.place|default:"N/A" }}</td>
                 <td class="actions-column">
-                    <a href="{% url 'patients:edit_patient' patient.id %}" class="button button-warning">Edit</a>
-                    <a href="{% url 'patients:delete_patient' patient.id %}" class="button button-danger">Delete</a>
+                    <a href="{% url 'patients:edit_patient' patient.pk %}" class="button button-warning">Edit</a>
+                    <a href="{% url 'patients:delete_patient' patient.pk %}" class="button button-danger">Delete</a>
                 </td>
             </tr>
             {% endfor %}
@@ -56,8 +56,6 @@
         <div style="text-align:center; margin-top:20px;">
              <a href="{% url 'patients:patient_list' %}" class="button button-secondary">Clear Search and Show All Patients</a>
         </div>
-    {% else %}
-        <p class="no-items">No patients found in the system yet.</p>
     {% endif %}
 {% endif %}
 {% endblock content %}

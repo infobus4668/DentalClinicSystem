@@ -26,7 +26,7 @@
         </div>
         
         <div class="main-actions-bar" style="display: flex; justify-content: flex-end; gap: 10px;">
-            <a href="{% url 'patients:patient_detail' form.instance.id %}" class="action-link button-secondary">Cancel</a>
+            <a href="{% url 'patients:patient_detail' form.instance.pk %}" class="action-link button-secondary">Cancel</a>
             <button type="submit" class="button button-success">Save Changes</button>
         </div>
     </form>

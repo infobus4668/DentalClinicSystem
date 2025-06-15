@@ -34,7 +34,7 @@ class PatientModelTest(TestCase):
             pincode="400001"
         )
         
-        saved_patient = Patient.objects.get(id=patient.id)
+        saved_patient = Patient.objects.get(pk=patient.pk) # Normalized to pk
         
         self.assertEqual(saved_patient.name, "Priya Sharma")
         self.assertEqual(str(saved_patient.contact_number), "+919988776655")

@@ -25,7 +25,7 @@
         </div>
 
         <div class="main-actions-bar" style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
-            <a href="{% url 'doctors:doctor_detail' doctor.id %}" class="action-link button-secondary">Cancel</a>
+            <a href="{% url 'doctors:doctor_detail' doctor.pk %}" class="action-link button-secondary">Cancel</a>
             <button type="submit" class="button button-success">Save Changes</button>
         </div>
     </form>

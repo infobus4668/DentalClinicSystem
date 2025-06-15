@@ -27,15 +27,15 @@
             <tbody>
                 {% for appointment in appointments_list %}
                 <tr>
-                    <td><a href="{% url 'patients:patient_detail' appointment.patient.id %}">{{ appointment.patient.name }}</a></td>
-                    <td><a href="{% url 'doctors:doctor_detail' appointment.doctor.id %}">Dr. {{ appointment.doctor.name }}</a></td>
-                    <td><a href="{% url 'appointments:appointment_detail' appointment.id %}">{{ appointment.appointment_datetime|date:"Y-m-d P" }}</a></td>
+                    <td><a href="{% url 'patients:patient_detail' pk=appointment.patient.pk %}">{{ appointment.patient.name }}</a></td>
+                    <td><a href="{% url 'doctors:doctor_detail' pk=appointment.doctor.pk %}">Dr. {{ appointment.doctor.name }}</a></td>
+                    <td><a href="{% url 'appointments:appointment_detail' pk=appointment.pk %}">{{ appointment.appointment_datetime|date:"Y-m-d P" }}</a></td>
                     <td>{{ appointment.reason|default:"N/A" }}</td>
                     <td>{{ appointment.get_status_display }}</td>
                     <td>{{ appointment.notes|default:"N/A" }}</td>
                      <td class="actions-column">
-                        <a href="{% url 'appointments:edit_appointment' appointment.id %}" class="button button-warning">Edit</a>
-                        <a href="{% url 'appointments:delete_appointment' appointment.id %}" class="button button-danger">Delete</a>
+                        <a href="{% url 'appointments:edit_appointment' pk=appointment.pk %}" class="button button-warning">Edit</a>
+                        <a href="{% url 'appointments:delete_appointment' pk=appointment.pk %}" class="button button-danger">Delete</a>
                     </td>
                 </tr>
                 {% endfor %}

@@ -27,15 +27,15 @@
             {% for staff_member in staff_members_list %}
             <tr>
                 {# Link to the detail page for this staff member #}
-                <td><a href="{% url 'staff:staff_detail' staff_member.id %}">{{ staff_member.name }}</a></td>
+                <td><a href="{% url 'staff:staff_detail' staff_member.pk %}">{{ staff_member.name }}</a></td>
                 <td>{{ staff_member.get_role_display }}</td>
                 <td>{{ staff_member.contact_number|default:"N/A" }}</td>
                 <td>{{ staff_member.email|default:"N/A" }}</td>
                 <td>{{ staff_member.date_joined|date:"M d, Y" }}</td>
                 <td>{% if staff_member.is_active %}Yes{% else %}No{% endif %}</td>
                 <td class="actions-column"> {# Added: Actions column for each row #}
-                    <a href="{% url 'staff:edit_staff_member' staff_member.id %}" class="button button-warning">Edit</a>
-                    <a href="{% url 'staff:delete_staff_member' staff_member.id %}" class="button button-danger">Delete</a>
+                    <a href="{% url 'staff:edit_staff_member' staff_member.pk %}" class="button button-warning">Edit</a>
+                    <a href="{% url 'staff:delete_staff_member' staff_member.pk %}" class="button button-danger">Delete</a>
                 </td>
             </tr>
             {% endfor %}

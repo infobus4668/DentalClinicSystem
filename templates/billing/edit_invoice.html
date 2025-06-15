@@ -84,7 +84,7 @@
     
     <div class="main-actions-bar">
         <button type="submit" class="button button-success">Save Changes</button>
-        <a href="{% url 'billing:invoice_detail' invoice.id %}" class="button button-secondary">Cancel</a>
+        <a href="{% url 'billing:invoice_detail' pk=invoice.pk %}" class="button button-secondary">Cancel</a>
     </div>
 </form>
 {% endblock content %}

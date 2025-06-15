@@ -12,7 +12,7 @@
     <form method="POST" style="display: inline;">
         {% csrf_token %}
         <button type="submit" class="button button-danger">Yes, Delete Staff Member</button>
-        <a href="{% url 'staff:staff_detail' staff_member.id %}" class="action-link button-secondary">Cancel</a>
+        <a href="{% url 'staff:staff_detail' staff_member.pk %}" class="action-link button-secondary">Cancel</a>
     </form>
 </div>
 {% endblock content %}
