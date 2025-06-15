@@ -18,7 +18,8 @@
                         <small class="form-text text-muted">{{ field.help_text }}</small>
                     {% endif %}
                     {% for error in field.errors %}
-                        <div class="error-message">{{ error }}</div>
+                        {# MODIFIED THIS LINE to add the style #}
+                        <div class="error-message" style="color: var(--danger-color);">{{ error }}</div>
                     {% endfor %}
                 </div>
             {% endfor %}

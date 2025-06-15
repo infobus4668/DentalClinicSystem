@@ -3,6 +3,7 @@
 from django import forms
 from .models import Doctor
 from django.contrib.auth.models import User
+from phonenumber_field.widgets import PhoneNumberPrefixWidget # IMPORT THIS
 
 class DoctorForm(forms.ModelForm):
     # Field to select a user, filtering out users already linked to other doctors or staff
@@ -14,9 +15,8 @@ class DoctorForm(forms.ModelForm):
 
     class Meta:
         model = Doctor
-        # This list now perfectly matches the fields on the updated Doctor model
         fields = [
-            'user', # <<< ADDED
+            'user',
             'name', 
             'specialization',
             'contact_number', 
@@ -25,6 +25,8 @@ class DoctorForm(forms.ModelForm):
             'availability_notes'
         ]
         widgets = {
+            # ADDED: A better widget for the phone number field.
+            'contact_number': PhoneNumberPrefixWidget(initial='IN'),
             'credentials': forms.Textarea(attrs={'rows': 3}),
             'availability_notes': forms.Textarea(attrs={'rows': 3, 'placeholder': 'E.g., Mon-Fri 9am-5pm, available on alternate Saturdays'}),
         }
@@ -37,7 +39,7 @@ class DoctorForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Add placeholders and common styling class
         self.fields['name'].widget.attrs.update({'placeholder': 'Enter full name'})
-        self.fields['contact_number'].widget.attrs.update({'placeholder': 'Enter 10-digit number'})
+        # REMOVED: Placeholder for contact_number is no longer needed.
         self.fields['email'].widget.attrs.update({'placeholder': 'e.g., doctor@example.com'})
         self.fields['credentials'].widget.attrs.update({'placeholder': 'e.g., License No., Degrees'})
         
