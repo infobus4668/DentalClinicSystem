@@ -3,6 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">  {# Optional for legacy browsers #}
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ CLINIC_NAME }}{% endblock title %}</title>
     
@@ -33,6 +34,10 @@
                         <li><a href="{% url 'billing:invoice_list' %}">Invoices</a></li>
                         <li><a href="{% url 'lab_cases:lab_case_list' %}">Lab Cases</a></li>
                         
+                        {% comment %}
+                        Ensure that 'is_manager' is in context or replace as needed,
+                        e.g., {% if user.is_staff %} or based on groups
+                        {% endcomment %}
                         {% if is_manager %}
                             <li><a href="{% url 'staff:staff_list' %}">Staff</a></li>
                             <li><a href="{% url 'reporting:report_index' %}">Reports</a></li>

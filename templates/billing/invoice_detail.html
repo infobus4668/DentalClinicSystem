@@ -71,7 +71,6 @@
         <p class="no-items">No items added to this invoice.</p>
     {% endif %}
 
-    {# UPDATED SUMMARY SECTION #}
     <div class="invoice-summary">
         <table class="summary-table" style="width: 50%; margin-left: 50%; border: none;">
              <tbody>
@@ -87,7 +86,7 @@
                     <td>Net Amount:</td>
                     <td class="text-right">₹{{ invoice.net_amount|floatformat:2 }}</td>
                 </tr>
-                 <tr>
+                <tr>
                     <td>Amount Paid:</td>
                     <td class="text-right">- ₹{{ invoice.amount_paid|floatformat:2 }}</td>
                 </tr>
@@ -99,18 +98,15 @@
         </table>
     </div>
 
-    {# This is the updated action bar for templates/billing/invoice_detail.html #}
+    <div class="main-actions-bar">
+        <a href="{% url 'billing:invoice_list' %}" class="action-link button-secondary">Back to Invoices</a>
+        <a href="{% url 'billing:edit_invoice' invoice.id %}" class="action-link button-warning">Edit Invoice</a>
+        <a href="{% url 'billing:invoice_print' invoice.id %}" target="_blank" class="action-link button-info">Print Simple Invoice</a>
 
-<div class="main-actions-bar">
-    <a href="{% url 'billing:invoice_list' %}" class="action-link button-secondary">Back to Invoices</a>
-    <a href="{% url 'billing:edit_invoice' invoice.id %}" class="action-link button-warning">Edit Invoice</a>
-    <a href="{% url 'billing:invoice_print' invoice.id %}" target="_blank" class="action-link button-info">Print Simple Invoice</a>
-    
-    {# FIX: Only show this button if the invoice is linked to an appointment #}
-    {% if invoice.appointment %}
-    <a href="{% url 'appointments:print_bill_summary' invoice.appointment.id %}" target="_blank" class="action-link button-primary">Print Full Bill & Summary</a>
-    {% endif %}
+        {% if invoice.appointment %}
+        <a href="{% url 'appointments:print_bill_summary' invoice.appointment.id %}" target="_blank" class="action-link button-primary">Print Full Bill & Summary</a>
+        {% endif %}
 
-    <a href="{% url 'billing:delete_invoice' invoice.id %}" class="action-link button-danger">Delete Invoice</a>
-</div>
+        <a href="{% url 'billing:delete_invoice' invoice.id %}" class="action-link button-danger">Delete Invoice</a>
+    </div>
 {% endblock content %}

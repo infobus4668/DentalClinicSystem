@@ -27,9 +27,10 @@
             {% for form in formset %}
                 <div class="formset-row" style="border-bottom: 1px solid #eee; padding-bottom: 1.5em; margin-bottom: 1.5em;">
                     
-                    {# THIS IS THE NEWLY ADDED LINE TO SHOW ROW-SPECIFIC ERRORS #}
                     {% if form.non_field_errors %}
-                        <div class="error-message" style="color: var(--danger-color); font-weight: bold; margin-bottom: 10px;">{{ form.non_field_errors }}</div>
+                        <div class="error-message" style="color: var(--danger-color); font-weight: bold; margin-bottom: 10px;">
+                            {{ form.non_field_errors }}
+                        </div>
                     {% endif %}
 
                     <div class="formset-row-fields">
@@ -92,6 +93,7 @@ $(document).ready(function() {
     const container = $('#invoice-items-container');
 
     function initializeRow(row) {
+        // Initialize select2 controls
         row.find('.select2-enable').select2({ theme: "classic", width: '100%' });
 
         const productSelect = row.find('select[name$="-product"]');
@@ -101,49 +103,68 @@ $(document).ready(function() {
         const quantityInput = row.find('input[name$="-quantity"]');
         const descInput = row.find('input[name$="-description"]');
 
-        productSelect.on('change', function() {
+        productSelect.off('change').on('change', function() {
             const productId = $(this).val();
-            batchSelect.html('<option value="" selected>Select Batch</option>').val('').trigger('change');
+            
+            // Reset batch select
+            batchSelect.empty().append('<option value="" selected>Select Batch</option>').val('').trigger('change.select2');
+            
             if (productId) {
+                // Reset service select
                 serviceSelect.val(null).trigger('change.select2');
+                // Populate batches for selected product
                 const batches = itemData.batches[productId] || [];
                 batches.forEach(function(batch) {
                     const option = new Option(batch.name, batch.id, false, false);
                     batchSelect.append(option);
                 });
-                batchSelect.trigger('change');
-                priceInput.val(itemData.products[productId].price || '0.00');
-                descInput.val($(this).find('option:selected').text());
+                batchSelect.trigger('change.select2');
+                
+                // Set unit price and description from product price and name
+                priceInput.val(itemData.products[productId]?.price || '0.00');
+                descInput.val(productSelect.find('option:selected').text());
+            } else {
+                priceInput.val('0.00');
+                descInput.val('');
             }
+            quantityInput.removeAttr('max');
         });
 
-        batchSelect.on('change', function() {
+        batchSelect.off('change').on('change', function() {
             const productId = productSelect.val();
             const batchId = $(this).val();
             if (productId && batchId && itemData.batches[productId]) {
-                const batch = itemData.batches[productId].find(b => b.id == batchId);
+                const batch = itemData.batches[productId].find(b => String(b.id) === String(batchId));
                 if (batch) {
                     quantityInput.attr('max', batch.available);
+                } else {
+                    quantityInput.removeAttr('max');
                 }
             } else {
                 quantityInput.removeAttr('max');
             }
         });
 
-        serviceSelect.on('change', function() {
+        serviceSelect.off('change').on('change', function() {
             const serviceId = $(this).val();
             if (serviceId) {
                 productSelect.val(null).trigger('change.select2');
                 priceInput.val(itemData.services[serviceId] || '0.00');
-                descInput.val($(this).find('option:selected').text());
+                descInput.val(serviceSelect.find('option:selected').text());
+                quantityInput.removeAttr('max');
+            } else {
+                priceInput.val('0.00');
+                descInput.val('');
             }
         });
     }
 
+    // Initialize all existing rows
     container.find('.formset-row').each(function() {
         initializeRow($(this));
     });
-    
+
+    // Remove row button handler
     container.on('click', '.remove-row-btn', function() {
         const row = $(this).closest('.formset-row');
         const deleteInput = row.find('input[name$="-DELETE"]');
@@ -156,12 +177,12 @@ $(document).ready(function() {
         }
     });
 
+    // Add new row button handler
     $('#add-item-button').on('click', function() {
         const totalFormsInput = $('#id_items-TOTAL_FORMS');
-        let formIdx = parseInt(totalFormsInput.val());
-        const emptyFormTemplate = $('#empty-form-template').html().replace(/__prefix__/g, formIdx);
-        
-        const newRow = $(emptyFormTemplate);
+        let formIdx = parseInt(totalFormsInput.val(), 10);
+        let emptyFormHtml = $('#empty-form-template').html().replace(/__prefix__/g, formIdx);
+        const newRow = $(emptyFormHtml);
         container.append(newRow);
         
         initializeRow(newRow);

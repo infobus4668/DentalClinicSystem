@@ -93,7 +93,13 @@ $(document).ready(function() {
     const container = $('#invoice-items-container');
 
     function initializeRow(row) {
-        row.find('.select2-enable').select2({ theme: "classic", width: '100%' });
+        // Initialize select2 (avoid multiple inits by destroying first)
+        row.find('.select2-enable').each(function() {
+            if ($(this).hasClass("select2-hidden-accessible")) {
+                $(this).select2('destroy');
+            }
+            $(this).select2({ theme: "classic", width: '100%' });
+        });
 
         const productSelect = row.find('select[name$="-product"]');
         const batchSelect = row.find('select[name$="-stock_item"]');
@@ -102,69 +108,89 @@ $(document).ready(function() {
         const quantityInput = row.find('input[name$="-quantity"]');
         const descInput = row.find('input[name$="-description"]');
 
-        productSelect.on('change', function() {
+        productSelect.off('change').on('change', function() {
             const productId = $(this).val();
-            
+
             const currentBatch = batchSelect.val();
-            batchSelect.html('<option value="">Select Batch</option>'); 
-            
+            batchSelect.html('<option value="">Select Batch</option>');
+
             if (productId && itemData.batches[productId]) {
+                // Reset service select
                 serviceSelect.val(null).trigger('change.select2');
+
+                // Populate batches for selected product
                 const batches = itemData.batches[productId];
                 batches.forEach(function(batch) {
                     const isSelected = (batch.id == currentBatch);
                     const option = new Option(batch.name, batch.id, isSelected, isSelected);
                     batchSelect.append(option);
                 });
-                
+
                 if (currentBatch) {
-                    batchSelect.val(currentBatch);
+                    batchSelect.val(currentBatch).trigger('change.select2');
+                } else {
+                    batchSelect.trigger('change.select2');
                 }
-                batchSelect.trigger('change'); 
-                
-                priceInput.val(itemData.products[productId].price || '0.00');
+
+                priceInput.val(itemData.products[productId]?.price || '0.00');
+                descInput.val(productSelect.find('option:selected').text());
             } else {
-                 batchSelect.trigger('change');
+                batchSelect.trigger('change.select2');
+                priceInput.val('');
+                descInput.val('');
             }
+            
+            quantityInput.removeAttr('max');
         });
 
-        batchSelect.on('change', function() {
+        batchSelect.off('change').on('change', function() {
             const productId = productSelect.val();
             const batchId = $(this).val();
+
             if (productId && batchId && itemData.batches[productId]) {
-                const batch = itemData.batches[productId].find(b => b.id == batchId);
+                // Find batch info
+                const batch = itemData.batches[productId].find(b => String(b.id) === String(batchId));
                 if (batch) {
+                    // Allow max as batch available + current (for editing existing)
                     const originalQuantity = parseInt(row.find('input[name$="-quantity"]').attr('value')) || 0;
                     quantityInput.attr('max', batch.available + originalQuantity);
+                } else {
+                    quantityInput.removeAttr('max');
                 }
             } else {
                 quantityInput.removeAttr('max');
             }
         });
 
-        serviceSelect.on('change', function() {
+        serviceSelect.off('change').on('change', function() {
             const serviceId = $(this).val();
             if (serviceId) {
                 productSelect.val(null).trigger('change.select2');
                 priceInput.val(itemData.services[serviceId] || '0.00');
+                descInput.val(serviceSelect.find('option:selected').text());
+                quantityInput.removeAttr('max');
+            } else {
+                priceInput.val('');
+                descInput.val('');
             }
         });
-        
-        // Trigger change on page load to populate batches for existing items
-        if(productSelect.val()){
-           productSelect.trigger('change');
-        }
+
+        // Trigger change on page load for existing product/batch selections
+        if(productSelect.val()) productSelect.trigger('change');
+        if(serviceSelect.val()) serviceSelect.trigger('change');
     }
 
+    // Initialize existing rows
     container.find('.formset-row').each(function() {
         initializeRow($(this));
     });
-    
+
+    // Remove row button handler
     container.on('click', '.remove-row-btn', function() {
         const row = $(this).closest('.formset-row');
         const deleteInput = row.find('input[name$="-DELETE"]');
-        
-        if (deleteInput.length > 0) {
+
+        if (deleteInput.length) {
             deleteInput.prop('checked', true);
             row.hide();
         } else {
@@ -172,14 +198,13 @@ $(document).ready(function() {
         }
     });
 
+    // Add new row button handler
     $('#add-item-button').on('click', function() {
         const totalFormsInput = $('#id_items-TOTAL_FORMS');
-        let formIdx = parseInt(totalFormsInput.val());
-        const emptyFormTemplate = $('#empty-form-template').html().replace(/__prefix__/g, formIdx);
-        
-        const newRow = $(emptyFormTemplate);
+        let formIdx = parseInt(totalFormsInput.val(), 10);
+        const emptyFormHtml = $('#empty-form-template').html().replace(/__prefix__/g, formIdx);
+        const newRow = $(emptyFormHtml);
         container.append(newRow);
-        
         initializeRow(newRow);
         totalFormsInput.val(formIdx + 1);
     });

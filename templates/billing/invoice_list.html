@@ -10,6 +10,16 @@
     .filter-bar .status-filters { display: flex; gap: 10px; align-items: center; }
     .filter-bar .status-filters a { padding: 8px 12px; border-radius: 4px; text-decoration: none; background-color: #e9ecef; color: #495057; font-weight: 500; font-size: 0.9em; }
     .filter-bar .status-filters a.active { background-color: #007bff; color: #fff; }
+    .status-badge { padding: 2px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; font-size: 0.8em; }
+    .status-PENDING { background-color: #ffc107; color: #212529; }
+    .status-PAID { background-color: #28a745; color: #fff; }
+    .status-PARTIAL { background-color: #17a2b8; color: #fff; }
+    .status-CANCELLED { background-color: #dc3545; color: #fff; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 15px; border: 1px solid #dee2e6; text-align: left; }
+    th { background-color: #e9ecef; }
+    .actions-column a { margin-right: 8px; }
+    .no-items { font-style: italic; color: #6c757d; }
 </style>
 {% endblock extra_head %}
 
@@ -19,23 +29,24 @@
     <div class="page-actions" style="border-top: none; padding-top: 0;">
         <a href="{% url 'billing:create_invoice' %}" class="action-link button-primary">Create New Invoice</a>
     </div>
-    <div class="filter-bar">
-        <form method="GET" action="{% url 'billing:invoice_list' %}" class="search-form">
-            <input type="text" name="q" class="form-control" placeholder="Search by Invoice # or Patient" value="{{ search_query|default:'' }}" style="width: 250px;">
+
+    <nav class="filter-bar" aria-label="Invoice filters">
+        <form method="GET" action="{% url 'billing:invoice_list' %}" class="search-form" role="search" aria-label="Invoice search form">
+            <input type="text" name="q" class="form-control" placeholder="Search by Invoice # or Patient" value="{{ search_query|default:'' }}" style="width: 250px;" aria-label="Search invoices">
             {% if status_filter %}
                 <input type="hidden" name="status" value="{{ status_filter }}">
             {% endif %}
-            <button type="submit" class="button button-primary">Search</button>
+            <button type="submit" class="button button-primary" aria-label="Search invoices">Search</button>
         </form>
 
-        <div class="status-filters">
+        <div class="status-filters" role="group" aria-label="Filter invoices by status">
             <strong>Filter by Status:</strong>
             <a href="{% url 'billing:invoice_list' %}" class="{% if not status_filter %}active{% endif %}">All</a>
             {% for value, display in status_choices %}
-                <a href="?status={{ value }}&q={{ search_query|default:'' }}" class="{% if status_filter == value %}active{% endif %}">{{ display }}</a>
+                <a href="?status={{ value }}&q={{ search_query|default:''|urlencode }}" class="{% if status_filter == value %}active{% endif %}">{{ display }}</a>
             {% endfor %}
         </div>
-    </div>
+    </nav>
 
     {% if invoices_list %}
     <div class="table-responsive">
@@ -65,8 +76,8 @@
                     <td>₹{{ invoice.balance_due|floatformat:2 }}</td>
                     <td><span class="status-badge status-{{ invoice.status }}">{{ invoice.get_status_display }}</span></td>
                     <td class="actions-column">
-                        <a href="{% url 'billing:edit_invoice' invoice.id %}" class="action-link button-warning edit-link">Edit</a>
-                        <a href="{% url 'billing:delete_invoice' invoice.id %}" class="action-link button-danger delete-link">Delete</a>
+                        <a href="{% url 'billing:edit_invoice' invoice.id %}" class="action-link button-warning edit-link" rel="nofollow">Edit</a>
+                        <a href="{% url 'billing:delete_invoice' invoice.id %}" class="action-link button-danger delete-link" rel="nofollow">Delete</a>
                     </td>
                 </tr>
                 {% endfor %}

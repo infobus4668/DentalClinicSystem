@@ -1,5 +1,3 @@
-# DENTALCLINICSYSTEM/billing/admin.py
-
 from django.contrib import admin
 from .models import (
     Service, Product, Invoice, InvoiceItem, 
@@ -35,8 +33,8 @@ class InvoiceItemInline(admin.TabularInline):
     model = InvoiceItem
     extra = 0
     fields = ('service', 'stock_item', 'description', 'quantity', 'unit_price', 'discount')
-    raw_id_fields = ('service', 'stock_item',) 
-    
+    raw_id_fields = ('service', 'stock_item',)
+
 class InvoiceAdmin(admin.ModelAdmin):
     list_display = ('invoice_number', 'patient', 'doctor', 'invoice_date', 'status', 'net_amount', 'amount_paid', 'balance_due')
     list_filter = ('status', 'invoice_date', 'doctor')
@@ -57,7 +55,7 @@ class SupplierPaymentInline(admin.TabularInline):
 class PurchaseOrderAdmin(admin.ModelAdmin):
     list_display = ('id', 'supplier', 'order_date', 'status', 'total_amount')
     list_filter = ('status', 'order_date', 'supplier')
-    search_fields = ('id', 'supplier__name')
+    search_fields = ('supplier__name',)
     readonly_fields = ('total_amount',)
     inlines = [PurchaseOrderItemInline, SupplierPaymentInline]
 
@@ -66,6 +64,11 @@ class StockAdjustmentAdmin(admin.ModelAdmin):
     list_filter = ('adjustment_date', 'reason', 'adjustment_type')
     raw_id_fields = ('product', 'adjusted_by')
 
+class StockItemTransactionAdmin(admin.ModelAdmin):
+    list_display = ('invoice_item', 'stock_item', 'quantity')
+    list_filter = ('stock_item',)
+    search_fields = ('invoice_item__invoice__invoice_number', 'stock_item__batch_number')
+
 admin.site.register(Supplier, SupplierAdmin)
 admin.site.register(StockItem, StockItemAdmin)
 admin.site.register(Service, ServiceAdmin)
@@ -73,4 +76,4 @@ admin.site.register(Product, ProductAdmin)
 admin.site.register(Invoice, InvoiceAdmin)
 admin.site.register(PurchaseOrder, PurchaseOrderAdmin)
 admin.site.register(StockAdjustment, StockAdjustmentAdmin)
-admin.site.register(StockItemTransaction)
+admin.site.register(StockItemTransaction, StockItemTransactionAdmin)

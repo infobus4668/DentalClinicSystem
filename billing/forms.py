@@ -1,5 +1,3 @@
-# DENTALCLINICSYSTEM/billing/forms.py
-
 from django import forms
 from django.forms import inlineformset_factory, BaseInlineFormSet, formset_factory
 from .models import (
@@ -63,7 +61,7 @@ class ProductForm(forms.ModelForm):
         labels = {
             'price': 'Selling Price (MRP)',
             'is_active': 'Product Available for Sale?'
-            }
+        }
 
 class StockAdjustmentForm(forms.ModelForm):
     class Meta:
@@ -81,9 +79,15 @@ class StockAdjustmentForm(forms.ModelForm):
         quantity = self.cleaned_data.get('quantity')
         adjustment_type = self.cleaned_data.get('adjustment_type')
         product = self.cleaned_data.get('product')
+
         if adjustment_type == 'SUBTRACTION' and product:
-            if quantity > product.stock_quantity:
-                raise forms.ValidationError(f"Cannot subtract {quantity} items. Only {product.stock_quantity} are available.")
+            stock_qty = getattr(product, 'stock_quantity', None)
+            if stock_qty is None:
+                stock_qty = product.stockitem_set.aggregate(total_qty=models.Sum('quantity_available'))['total_qty'] or 0
+            if quantity > stock_qty:
+                raise forms.ValidationError(
+                    f"Cannot subtract {quantity} items. Only {stock_qty} are available."
+                )
         return quantity
 
 class PurchaseOrderForm(forms.ModelForm):
@@ -129,9 +133,21 @@ class ReceiveStockForm(forms.Form):
 ReceiveStockFormSet = formset_factory(ReceiveStockForm, extra=0)
 
 class InvoiceForm(forms.ModelForm):
-    patient = forms.ModelChoiceField(queryset=Patient.objects.all().order_by('name'), widget=forms.Select(attrs={'class': 'form-control select2-enable'}))
-    doctor = forms.ModelChoiceField(queryset=Doctor.objects.all().order_by('name'), required=False, widget=forms.Select(attrs={'class': 'form-control select2-enable'}))
-    appointment = forms.ModelChoiceField(queryset=Appointment.objects.all().order_by('-appointment_datetime'), required=False, widget=forms.Select(attrs={'class': 'form-control select2-enable'}), help_text="Optional: Link this invoice to a specific appointment.")
+    patient = forms.ModelChoiceField(
+        queryset=Patient.objects.all().order_by('name'),
+        widget=forms.Select(attrs={'class': 'form-control select2-enable'})
+    )
+    doctor = forms.ModelChoiceField(
+        queryset=Doctor.objects.all().order_by('name'),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control select2-enable'})
+    )
+    appointment = forms.ModelChoiceField(
+        queryset=Appointment.objects.all().order_by('-appointment_datetime'),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control select2-enable'}),
+        help_text="Optional: Link this invoice to a specific appointment."
+    )
     class Meta:
         model = Invoice
         fields = ['patient', 'doctor', 'appointment', 'invoice_date', 'due_date', 'status', 'discount', 'amount_paid', 'notes']
@@ -170,109 +186,81 @@ class InvoiceItemForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        # This logic makes the form work correctly during server-side validation
-        # by dynamically setting the queryset for the 'stock_item' field.
         stock_item_field = self.fields['stock_item']
         stock_item_field.queryset = StockItem.objects.none()
 
-        # If the form is bound to data (i.e., a POST request)
-        if 'data' in kwargs:
+        if self.is_bound:
+            product_key = f"{self.prefix}-product" if self.prefix else "product"
             try:
-                product_id = int(kwargs['data'].get(self.prefix + '-product'))
+                product_id = int(self.data.get(product_key))
                 stock_item_field.queryset = StockItem.objects.filter(product_id=product_id)
             except (ValueError, TypeError):
                 pass
-        # If the form is for an existing instance (i.e., an edit page)
         elif self.instance.pk and self.instance.stock_item:
             self.fields['product'].initial = self.instance.stock_item.product
             stock_item_field.queryset = StockItem.objects.filter(product=self.instance.stock_item.product)
 
     def is_empty(self):
-        """
-        Checks if the form is essentially empty, meaning no meaningful data
-        has been entered in any of its core fields for a new instance.
-        """
-        # Only consider a form empty if it's a new instance (no PK)
         if self.instance.pk:
             return False
 
-        # Check raw data from POST or initial data if unbound
         data = self.data if self.is_bound else self.initial
 
-        # Define fields whose emptiness determines if the form is 'empty'
-        # These are the fields that, if all empty, mean the row is unused.
         check_fields = [
             'service', 'product', 'stock_item', 'description', 
             'quantity', 'unit_price', 'discount'
         ]
-        
+
         for field_name in check_fields:
-            full_field_name = self.prefix + '-' + field_name if self.is_bound else field_name
-            value = data.get(full_field_name)
+            field_key = self.prefix + '-' + field_name if self.is_bound else field_name
+            value = data.get(field_key)
 
-            # For numeric fields, check for empty string or '0'
             if field_name in ['quantity', 'unit_price', 'discount']:
-                if value is not None and value != '' and Decimal(value) != Decimal('0.00'):
-                    return False # Not empty
-            # For choice fields or text fields, check for empty string or None
-            elif value is not None and value != '':
-                return False # Not empty
+                try:
+                    if value is not None and value != '' and Decimal(value) != Decimal('0'):
+                        return False
+                except Exception:
+                    return False
+            elif value not in [None, '']:
+                return False
         
-        return True # All checked fields are empty for a new form
+        return True
 
-
-    # CRUCIAL OVERRIDE: has_changed() to prevent saving empty extra forms
     def has_changed(self):
-        # Call the parent's has_changed first to get default behavior
         if super().has_changed():
             return True
-        
-        # If the super method says no change, and it's a new (extra) form that's empty,
-        # we still consider it "not changed" for the purpose of saving.
-        # This prevents saving empty extra forms.
         if not self.instance.pk and self.is_empty():
             return False
-        
-        return False # No change found by super() and not an empty new form.
+        return False
 
 
 class BaseInvoiceItemFormSet(BaseInlineFormSet):
     def clean(self):
-        super().clean() # This calls clean on each individual form and populates form.errors
-        
-        # This list will be used for cross-form validation below
-        # We only consider forms that are not marked for deletion AND are not empty extra forms.
+        super().clean()
+
         forms_to_validate = [
-            form for form in self.forms 
-            if not form.cleaned_data.get('DELETE', False) and 
-               (form.is_valid() or not form.is_empty()) # Include valid forms or forms that are NOT empty but might have individual errors
+            form for form in self.forms
+            if not form.cleaned_data.get('DELETE', False)
+            and not form.is_empty()
+            and not form.errors
         ]
 
-        # Now, iterate only through forms that are actually intended to be processed/saved
         for form in forms_to_validate:
-            # We already filtered out deleted/empty forms. Now ensure form is valid before accessing cleaned_data.
-            if not form.is_valid():
-                # If form is still not valid at this point (meaning it has real errors that need to be shown),
-                # let those errors propagate.
-                continue
-
             service = form.cleaned_data.get('service')
             stock_item = form.cleaned_data.get('stock_item')
             quantity = form.cleaned_data.get('quantity')
 
-            # Your custom cross-field validation
             if not service and not stock_item:
-                 form.add_error(None, "Each line item must have either a service or a product batch selected.")
-            
-            if stock_item and quantity:
-                initial_quantity = form.instance.quantity if form.instance and form.instance.pk else 0
-                
-                if quantity > stock_item.quantity_available + initial_quantity:
-                    form.add_error('quantity', 
-                        f"Not enough stock in Batch: {stock_item.batch_number or 'N/A'}. "
-                        f"Only {stock_item.quantity_available + initial_quantity} available."
-                    )
+                form.add_error(None, "Each line item must have either a service or a product batch selected.")
 
+            if stock_item and quantity is not None:
+                initial_quantity = form.instance.quantity if form.instance and form.instance.pk else 0
+                available_qty = stock_item.quantity_available + initial_quantity
+                if quantity > available_qty:
+                    form.add_error(
+                        'quantity', 
+                        f"Not enough stock in Batch: {stock_item.batch_number or 'N/A'}. Only {available_qty} available."
+                    )
 
 InvoiceItemFormSet = inlineformset_factory(
     Invoice,
@@ -280,6 +268,6 @@ InvoiceItemFormSet = inlineformset_factory(
     form=InvoiceItemForm,
     formset=BaseInvoiceItemFormSet,
     fields=['service', 'product', 'stock_item', 'description', 'quantity', 'unit_price', 'discount'],
-    extra=1, # Keep extra=1 to allow adding one extra blank form initially
+    extra=1,
     can_delete=True
 )
