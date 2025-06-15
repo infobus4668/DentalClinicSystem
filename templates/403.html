@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Permission Denied{% endblock title %}
+
+{% block content %}
+<div style="text-align: center; padding: 4rem 1rem; background-color: #fff; border-radius: var(--border-radius); box-shadow: var(--box-shadow);">
+    <h2 style="font-size: 4rem; color: var(--primary-color); margin-bottom: 0.5rem;">403</h2>
+    <h3 style="font-size: 1.75rem; color: var(--heading-color);">Access Denied</h3>
+    <p style="font-size: 1.1rem; color: var(--text-color-light); max-width: 500px; margin: 1rem auto;">
+        We're sorry, but you do not have the necessary permissions to access this page.
+    </p>
+    <p style="color: var(--text-color-light); max-width: 500px; margin: 0 auto 2rem auto;">
+        Please contact the clinic manager if you believe this is an error.
+    </p>
+    <a href="{% url 'dashboard' %}" class="button button-primary">Return to Dashboard</a>
+</div>
+{% endblock content %}

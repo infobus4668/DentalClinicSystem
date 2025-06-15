@@ -1,39 +1,45 @@
-# DENTALCLINICSYSTEM/patients/views.py
-
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q, ProtectedError
+from django.contrib.auth.decorators import login_required
 from .models import Patient
 from .forms import PatientForm
-from billing.models import Invoice
-from appointments.models import Appointment
+# MODIFIED: Importing the correct decorator
+from staff.decorators import role_required
+
+# This list defines which roles can access patient records.
+PATIENT_ACCESS_ROLES = ['MANAGER', 'RECEP', 'DOCTOR', 'ASSIST', 'HYGIEN', 'OTHER']
 
 @login_required
+# MODIFIED: Using the correct decorator with the appropriate roles
+@role_required(allowed_roles=PATIENT_ACCESS_ROLES)
 def patient_list_view(request):
-    query = request.GET.get('q', '')
-    if query:
-        all_patients = Patient.objects.filter(
-            Q(name__icontains=query) |
-            Q(contact_number__icontains=query)
-        ).order_by('name')
-    else:
-        all_patients = Patient.objects.all().order_by('name')
-
+    patients = Patient.objects.all().order_by('name')
     context = {
-        'patients_list': all_patients,
-        'page_title': 'List of Patients',
-        'search_query': query
+        'patients_list': patients,
+        'page_title': 'Patients'
     }
     return render(request, 'patients/patient_list.html', context)
 
 @login_required
+# MODIFIED: Using the correct decorator with the appropriate roles
+@role_required(allowed_roles=PATIENT_ACCESS_ROLES)
+def patient_detail_view(request, pk):
+    patient = get_object_or_404(Patient, pk=pk)
+    context = {
+        'patient': patient,
+        'page_title': f'Patient: {patient.name}'
+    }
+    return render(request, 'patients/patient_detail.html', context)
+
+@login_required
+# MODIFIED: Using the correct decorator with the appropriate roles
+@role_required(allowed_roles=PATIENT_ACCESS_ROLES)
 def add_patient_view(request):
     if request.method == 'POST':
-        form = PatientForm(request.POST)
+        form = PatientForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            messages.success(request, f'Patient "{form.cleaned_data.get("name")}" was added successfully.')
+            messages.success(request, 'Patient added successfully!')
             return redirect('patients:patient_list')
     else:
         form = PatientForm()
@@ -44,54 +50,35 @@ def add_patient_view(request):
     return render(request, 'patients/add_patient.html', context)
 
 @login_required
-def patient_detail_view(request, patient_id):
-    patient = get_object_or_404(Patient, id=patient_id)
-    patient_appointments = patient.appointments.all().order_by('-appointment_datetime')
-    patient_invoices = Invoice.objects.filter(patient=patient).order_by('-invoice_date')
-
-    context = {
-        'patient': patient,
-        'patient_appointments': patient_appointments,
-        'patient_invoices': patient_invoices,
-        'page_title': f"Details for {patient.name}"
-    }
-    return render(request, 'patients/patient_detail.html', context)
-
-@login_required
-def edit_patient_view(request, patient_id):
-    patient_to_edit = get_object_or_404(Patient, id=patient_id)
-
+# MODIFIED: Using the correct decorator with the appropriate roles
+@role_required(allowed_roles=PATIENT_ACCESS_ROLES)
+def edit_patient_view(request, pk):
+    patient = get_object_or_404(Patient, pk=pk)
     if request.method == 'POST':
-        form = PatientForm(request.POST, instance=patient_to_edit)
+        form = PatientForm(request.POST, request.FILES, instance=patient)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Patient details were updated successfully!')
-            return redirect('patients:patient_detail', patient_id=patient_to_edit.id)
+            messages.success(request, 'Patient details updated successfully!')
+            return redirect('patients:patient_detail', pk=patient.pk)
     else:
-        form = PatientForm(instance=patient_to_edit)
-
+        form = PatientForm(instance=patient)
     context = {
         'form': form,
-        'patient': patient_to_edit,
-        'page_title': f"Edit Details for {patient_to_edit.name}"
+        'page_title': 'Edit Patient'
     }
     return render(request, 'patients/edit_patient.html', context)
 
 @login_required
-def delete_patient_view(request, patient_id):
-    patient_to_delete = get_object_or_404(Patient, id=patient_id)
-
+# MODIFIED: Using the correct decorator with the appropriate roles
+@role_required(allowed_roles=['MANAGER']) # Only managers can delete patients
+def delete_patient_view(request, pk):
+    patient = get_object_or_404(Patient, pk=pk)
     if request.method == 'POST':
-        try:
-            patient_to_delete.delete()
-            messages.success(request, f'Patient "{patient_to_delete.name}" has been deleted successfully.')
-            return redirect('patients:patient_list')
-        except ProtectedError:
-            messages.error(request, f'Cannot delete "{patient_to_delete.name}" because they have existing appointments or other associated records.')
-            return redirect('patients:patient_detail', patient_id=patient_id)
-
+        patient.delete()
+        messages.success(request, 'Patient deleted successfully.')
+        return redirect('patients:patient_list')
     context = {
-        'patient': patient_to_delete,
-        'page_title': f"Confirm Delete: {patient_to_delete.name}"
+        'patient': patient,
+        'page_title': 'Confirm Delete'
     }
     return render(request, 'patients/patient_confirm_delete.html', context)

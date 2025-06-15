@@ -19,9 +19,11 @@ from .forms import (
 from patients.models import Patient
 from doctors.models import Doctor
 from appointments.models import Appointment
+# MODIFIED: Importing the correct decorator
 from staff.decorators import role_required
 
-BILLING_ROLES = ['MANAGER', 'RECEP', 'ASSIST', 'HYGIEN', 'OTHER']
+# This list defines which roles can access most billing functions.
+BILLING_ROLES = ['MANAGER', 'RECEP']
 
 
 def get_invoice_context_data():
@@ -81,7 +83,6 @@ def create_invoice_view(request, appointment_id=None):
                 item_formset.instance = invoice
                 item_formset.save()
 
-                # Calculate and save total amount
                 invoice.calculate_total_amount()
                 invoice.save()
 
@@ -171,7 +172,7 @@ def invoice_detail_view(request, invoice_id):
 
 
 @login_required
-@role_required(allowed_roles=BILLING_ROLES)
+@role_required(allowed_roles=['MANAGER']) # Only managers can delete invoices
 def delete_invoice_view(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id)
     if request.method == 'POST':
@@ -341,7 +342,6 @@ def receive_purchase_order_view(request, po_id):
                         batch_number=form.cleaned_data.get('batch_number'),
                         expiry_date=form.cleaned_data.get('expiry_date')
                     )
-                    # Use F() expression to update quantity_received atomically
                     PurchaseOrderItem.objects.filter(id=po_item.id).update(quantity_received=F('quantity_received') + quantity_now)
 
                 purchase_order.update_status()
@@ -432,7 +432,7 @@ def edit_supplier_view(request, supplier_id):
 
 
 @login_required
-@role_required(allowed_roles=BILLING_ROLES)
+@role_required(allowed_roles=['MANAGER']) # Only managers can delete suppliers
 def delete_supplier_view(request, supplier_id):
     supplier = get_object_or_404(Supplier, id=supplier_id)
     if request.method == 'POST':
@@ -496,7 +496,7 @@ def edit_service_view(request, service_id):
 
 
 @login_required
-@role_required(allowed_roles=BILLING_ROLES)
+@role_required(allowed_roles=['MANAGER']) # Only managers can delete services
 def delete_service_view(request, service_id):
     service = get_object_or_404(Service, id=service_id)
     if request.method == 'POST':
@@ -560,7 +560,7 @@ def edit_product_view(request, product_id):
 
 
 @login_required
-@role_required(allowed_roles=BILLING_ROLES)
+@role_required(allowed_roles=['MANAGER']) # Only managers can delete products
 def delete_product_view(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     if request.method == 'POST':

@@ -28,3 +28,6 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# ADD THIS LINE to tell Django to use our custom 403 error view
+handler403 = 'dashboard.views.custom_permission_denied_view'

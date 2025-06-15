@@ -13,24 +13,23 @@ from .forms import AppointmentForm
 from dental_records.models import DentalRecord, Prescription
 from patients.models import Patient
 from billing.models import Invoice
-from staff.decorators import role_required # Make sure this is imported
+from staff.decorators import role_required
+
+# Defines which roles can access most appointment features
+APPOINTMENT_ACCESS_ROLES = ['MANAGER', 'RECEP', 'DOCTOR', 'ASSIST', 'HYGIEN']
+
 
 # --- API VIEW (For the main calendar) ---
 @login_required
 def appointment_api_view(request):
     user = request.user
     
-    # FIX: Reordered logic to check for superuser first
-    # 1. Superuser sees all appointments.
     if user.is_superuser:
         all_appointments = Appointment.objects.all().select_related('patient', 'doctor')
-    # 2. If not superuser, check for a doctor profile.
     elif hasattr(user, 'doctor_profile'):
         all_appointments = Appointment.objects.filter(doctor=user.doctor_profile).select_related('patient', 'doctor')
-    # 3. If not a doctor, check for a staff profile with manager/receptionist role.
     elif hasattr(user, 'staff_profile') and user.staff_profile.role in ['MANAGER', 'RECEP']:
         all_appointments = Appointment.objects.all().select_related('patient', 'doctor')
-    # 4. Otherwise, they see no appointments.
     else:
         all_appointments = Appointment.objects.none()
 
@@ -53,17 +52,15 @@ def appointment_api_view(request):
 
 # --- Regular Views ---
 @login_required
+# MODIFIED: Added role-based security
+@role_required(allowed_roles=APPOINTMENT_ACCESS_ROLES)
 def appointment_list_view(request):
     user = request.user
     
-    # FIX: Reordered logic to check for superuser first
-    # 1. Superuser and relevant staff see all appointments.
     if user.is_superuser or (hasattr(user, 'staff_profile') and user.staff_profile.role in ['MANAGER', 'RECEP']):
          all_appointments = Appointment.objects.order_by('-appointment_datetime')
-    # 2. If not staff, check for a doctor profile.
     elif hasattr(user, 'doctor_profile'):
         all_appointments = Appointment.objects.filter(doctor=user.doctor_profile).order_by('-appointment_datetime')
-    # 3. Otherwise, they see no appointments.
     else:
         all_appointments = Appointment.objects.none()
 
@@ -71,7 +68,8 @@ def appointment_list_view(request):
     return render(request, 'appointments/appointment_list.html', context)
 
 @login_required
-@role_required(['MANAGER', 'RECEP', 'DOCTOR']) # FIX: Added security decorator
+# MODIFIED: Added role-based security
+@role_required(allowed_roles=APPOINTMENT_ACCESS_ROLES)
 def schedule_appointment_view(request):
     initial_data = {}
     patient_id = request.GET.get('patient_id')
@@ -98,12 +96,13 @@ def schedule_appointment_view(request):
     return render(request, 'appointments/schedule_appointment.html', context)
 
 @login_required
-# FIX: Added security decorator. Detail view logic should be handled within the view.
+# MODIFIED: Added role-based security
+@role_required(allowed_roles=APPOINTMENT_ACCESS_ROLES)
 def appointment_detail_view(request, appointment_id):
     appointment = get_object_or_404(Appointment, id=appointment_id)
     user = request.user
 
-    # Security Check
+    # This inner security check is also good, as it ensures a doctor can only see their own appointments.
     is_staff_or_superuser = user.is_superuser or (hasattr(user, 'staff_profile') and user.staff_profile.role in ['MANAGER', 'RECEP'])
     is_the_doctor = hasattr(user, 'doctor_profile') and user.doctor_profile == appointment.doctor
 
@@ -125,7 +124,8 @@ def appointment_detail_view(request, appointment_id):
     return render(request, 'appointments/appointment_detail.html', context)
 
 @login_required
-@role_required(['MANAGER', 'RECEP', 'DOCTOR']) # FIX: Added security decorator
+# MODIFIED: Added role-based security
+@role_required(allowed_roles=APPOINTMENT_ACCESS_ROLES)
 def edit_appointment_view(request, appointment_id):
     appointment_to_edit = get_object_or_404(Appointment, id=appointment_id)
     if request.method == 'POST':
@@ -152,14 +152,15 @@ def delete_appointment_view(request, appointment_id):
 
 
 @login_required
+# MODIFIED: Added role-based security
+@role_required(allowed_roles=APPOINTMENT_ACCESS_ROLES)
 def print_summary_view(request, appointment_id):
     appointment = get_object_or_404(Appointment, pk=appointment_id)
-    # Note: Consider adding security checks to print views as well
     context = {
         'appointment': appointment,
         'page_title': f'Summary for {appointment.patient.name} on {appointment.appointment_datetime.date()}'
     }
-    # ... (rest of the view is unchanged)
+
     try:
         invoice = appointment.invoice
         context['invoice'] = invoice
@@ -179,17 +180,18 @@ def print_summary_view(request, appointment_id):
     return render(request, 'appointments/print_summary.html', context)
 
 @login_required
+# MODIFIED: Added role-based security
+@role_required(allowed_roles=APPOINTMENT_ACCESS_ROLES)
 def print_bill_summary_view(request, appointment_id):
     appointment = get_object_or_404(
         Appointment.objects.select_related('patient', 'doctor'), 
         pk=appointment_id
     )
-    # Note: Consider adding security checks to print views as well
     context = {
         'appointment': appointment,
         'page_title': f'Bill for {appointment.patient.name} on {appointment.appointment_datetime.date()}'
     }
-    # ... (rest of the view is unchanged)
+
     try:
         invoice = Invoice.objects.get(appointment=appointment)
         invoice_items = invoice.invoice_items.all()

@@ -28,8 +28,6 @@ def dashboard_view(request):
         appointments_base_qs = Appointment.objects.all()
         invoices_base_qs = Invoice.objects.all()
         lab_cases_base_qs = LabCase.objects.all()
-        # For a superuser, is_doctor should be considered false for dashboard filtering purposes
-        # so they see the main clinic dashboard, not a restricted doctor one.
         is_doctor = False 
 
     # 2. If not superuser, check for a doctor profile
@@ -115,3 +113,7 @@ def dashboard_view(request):
     }
 
     return render(request, 'dashboard/dashboard.html', context)
+
+# NEW: View to render the custom 403 page
+def custom_permission_denied_view(request, exception=None):
+    return render(request, "403.html", status=403)

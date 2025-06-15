@@ -20,7 +20,6 @@ def report_index_view(request):
 @login_required
 @role_required(allowed_roles=['MANAGER'])
 def financial_summary_report(request):
-    # This view is unchanged
     today = timezone.now().date()
     start_of_month = today.replace(day=1)
     next_month = (start_of_month + timedelta(days=32)).replace(day=1)
@@ -56,7 +55,6 @@ def financial_summary_report(request):
 @login_required
 @role_required(allowed_roles=['MANAGER', 'RECEP'])
 def stock_received_report_view(request):
-    # This view is unchanged
     form = ReportFilterForm(request.GET or None, hide_lab=True, hide_patient=True)
     stock_items = StockItem.objects.select_related('product', 'supplier').order_by('-date_received')
     if form.is_valid():
@@ -80,7 +78,6 @@ def stock_received_report_view(request):
 @login_required
 @role_required(allowed_roles=['MANAGER'])
 def supplier_payment_report_view(request):
-    # This view is unchanged
     form = ReportFilterForm(request.GET or None, hide_product=True, hide_lab=True, hide_patient=True)
     payments = SupplierPayment.objects.select_related('purchase_order__supplier').order_by('-payment_date')
     total_paid = 0
@@ -101,11 +98,9 @@ def supplier_payment_report_view(request):
     }
     return render(request, 'reporting/supplier_payment_report.html', context)
 
-# --- MODIFIED: Lab Cases Report View ---
 @login_required
 @role_required(allowed_roles=['MANAGER', 'RECEP'])
 def lab_cases_report_view(request):
-    # Use the form, hiding the fields we don't need for this report
     form = ReportFilterForm(request.GET or None, hide_supplier=True, hide_product=True)
     lab_cases = LabCase.objects.select_related('patient', 'doctor', 'lab').order_by('-date_sent')
 
@@ -113,13 +108,13 @@ def lab_cases_report_view(request):
         start_date = form.cleaned_data.get('start_date')
         end_date = form.cleaned_data.get('end_date')
         lab = form.cleaned_data.get('lab')
-        patient = form.cleaned_data.get('patient') # <-- Get the patient object
+        patient = form.cleaned_data.get('patient') 
 
         if start_date and end_date:
             lab_cases = lab_cases.filter(date_sent__range=[start_date, end_date])
         if lab:
             lab_cases = lab_cases.filter(lab=lab)
-        if patient: # <-- Filter by patient
+        if patient:
             lab_cases = lab_cases.filter(patient=patient)
     
     context = {

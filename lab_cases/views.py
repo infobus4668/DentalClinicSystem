@@ -6,8 +6,16 @@ from django.db.models import ProtectedError
 from django.contrib import messages
 from .models import DentalLab, LabCase
 from .forms import DentalLabForm, LabCaseForm
+# MODIFIED: Importing the role_required decorator
+from staff.decorators import role_required
+
+# Defines which roles can manage lab cases.
+LAB_ACCESS_ROLES = ['MANAGER', 'RECEP', 'DOCTOR', 'ASSIST']
+
 
 @login_required
+# MODIFIED: Added role-based security
+@role_required(allowed_roles=LAB_ACCESS_ROLES)
 def lab_list_view(request):
     """
     This view handles displaying a list of all dental labs.
@@ -19,8 +27,10 @@ def lab_list_view(request):
     }
     return render(request, 'lab_cases/lab_list.html', context)
 
-# --- New view for adding a dental lab ---
+
 @login_required
+# MODIFIED: Restricting lab management to Managers only
+@role_required(allowed_roles=['MANAGER'])
 def add_lab_view(request):
     """
     This view handles the creation of a new dental lab.
@@ -28,12 +38,11 @@ def add_lab_view(request):
     if request.method == 'POST':
         form = DentalLabForm(request.POST)
         if form.is_valid():
-            form.save() # Saves the new dental lab to the database
-            # Optionally, add a success message
-            # messages.success(request, 'New dental lab added successfully!')
-            return redirect('lab_cases:lab_list') # Redirect to the lab list page
+            form.save()
+            messages.success(request, 'New dental lab added successfully!')
+            return redirect('lab_cases:lab_list')
     else:
-        form = DentalLabForm() # An unbound form for a GET request
+        form = DentalLabForm()
 
     context = {
         'form': form,
@@ -42,6 +51,8 @@ def add_lab_view(request):
     return render(request, 'lab_cases/add_lab.html', context)
 
 @login_required
+# MODIFIED: Restricting lab management to Managers only
+@role_required(allowed_roles=['MANAGER'])
 def edit_lab_view(request, lab_id):
     """
     This view handles editing an existing dental lab.
@@ -49,28 +60,27 @@ def edit_lab_view(request, lab_id):
     lab_to_edit = get_object_or_404(DentalLab, id=lab_id)
 
     if request.method == 'POST':
-        # Initialize the form with submitted data AND the instance of the lab being edited
         form = DentalLabForm(request.POST, instance=lab_to_edit)
         if form.is_valid():
-            form.save() # Saves changes to the existing lab object
-            # messages.success(request, f"'{lab_to_edit.name}' updated successfully!")
-            return redirect('lab_cases:lab_list') # Redirect back to the list
+            form.save()
+            messages.success(request, f"'{lab_to_edit.name}' updated successfully!")
+            return redirect('lab_cases:lab_list')
     else:
-        # For a GET request, pre-fill the form with the lab's current data
         form = DentalLabForm(instance=lab_to_edit)
 
     context = {
         'form': form,
-        'lab': lab_to_edit, # Pass the lab object for context in the template
+        'lab': lab_to_edit,
         'page_title': f'Edit Lab: {lab_to_edit.name}'
     }
     return render(request, 'lab_cases/edit_lab.html', context)
 
 @login_required
+# MODIFIED: Restricting lab management to Managers only
+@role_required(allowed_roles=['MANAGER'])
 def delete_lab_view(request, lab_id):
     """
-    This view handles the deletion of an existing dental lab,
-    with a check for protected foreign keys.
+    This view handles the deletion of an existing dental lab.
     """
     lab_to_delete = get_object_or_404(DentalLab, id=lab_id)
 
@@ -82,33 +92,34 @@ def delete_lab_view(request, lab_id):
         except ProtectedError:
             messages.error(request, 
                 f"The lab '{lab_to_delete.name}' cannot be deleted because it is linked to one or more existing lab cases. "
-                "Please reassign or delete those cases first."
             )
-            return redirect('lab_cases:lab_list') # Redirect back to the list
+            return redirect('lab_cases:lab_list')
 
-    # For a GET request, show the confirmation page
     context = {
         'lab': lab_to_delete,
         'page_title': f'Confirm Delete: {lab_to_delete.name}'
     }
     return render(request, 'lab_cases/lab_confirm_delete.html', context)
 
+
 @login_required
+# MODIFIED: Added role-based security
+@role_required(allowed_roles=LAB_ACCESS_ROLES)
 def lab_case_list_view(request):
     """
     This view handles displaying a list of all lab cases.
     """
-    # Fetch all LabCase objects, using the default ordering from the model's Meta class
     all_cases = LabCase.objects.all()
 
     context = {
         'lab_cases_list': all_cases,
         'page_title': 'Lab Cases'
     }
-    # We will create this template in the next step
     return render(request, 'lab_cases/lab_case_list.html', context)
 
 @login_required
+# MODIFIED: Added role-based security
+@role_required(allowed_roles=LAB_ACCESS_ROLES)
 def add_lab_case_view(request):
     """
     This view handles the creation of a new lab case.
@@ -116,11 +127,11 @@ def add_lab_case_view(request):
     if request.method == 'POST':
         form = LabCaseForm(request.POST)
         if form.is_valid():
-            form.save() # Saves the new lab case to the database
+            form.save()
             messages.success(request, 'New lab case logged successfully!')
-            return redirect('lab_cases:lab_case_list') # Redirect to the lab case list page
+            return redirect('lab_cases:lab_case_list')
     else:
-        form = LabCaseForm() # An unbound form for a GET request
+        form = LabCaseForm()
 
     context = {
         'form': form,
@@ -129,6 +140,8 @@ def add_lab_case_view(request):
     return render(request, 'lab_cases/add_lab_case.html', context)
 
 @login_required
+# MODIFIED: Added role-based security
+@role_required(allowed_roles=LAB_ACCESS_ROLES)
 def lab_case_detail_view(request, case_id):
     """
     This view displays the details of a single lab case.
@@ -142,6 +155,8 @@ def lab_case_detail_view(request, case_id):
     return render(request, 'lab_cases/lab_case_detail.html', context)
 
 @login_required
+# MODIFIED: Added role-based security
+@role_required(allowed_roles=LAB_ACCESS_ROLES)
 def edit_lab_case_view(request, case_id):
     """
     This view handles editing an existing lab case.
@@ -149,24 +164,24 @@ def edit_lab_case_view(request, case_id):
     case_to_edit = get_object_or_404(LabCase, id=case_id)
 
     if request.method == 'POST':
-        # Initialize the form with submitted data AND the instance of the case being edited
         form = LabCaseForm(request.POST, instance=case_to_edit)
         if form.is_valid():
-            form.save() # Saves changes to the existing lab case object
+            form.save()
             messages.success(request, 'Lab case updated successfully!')
-            return redirect('lab_cases:lab_case_detail', case_id=case_to_edit.id) # Redirect back to the detail page
+            return redirect('lab_cases:lab_case_detail', case_id=case_to_edit.id)
     else:
-        # For a GET request, pre-fill the form with the case's current data
         form = LabCaseForm(instance=case_to_edit)
 
     context = {
         'form': form,
-        'case': case_to_edit, # Pass the case object for context in the template
+        'case': case_to_edit,
         'page_title': f'Edit Lab Case for {case_to_edit.patient.name}'
     }
     return render(request, 'lab_cases/edit_lab_case.html', context)
 
 @login_required
+# MODIFIED: Added role-based security (Only Managers can delete)
+@role_required(allowed_roles=['MANAGER'])
 def delete_lab_case_view(request, case_id):
     """
     This view handles the deletion of an existing lab case.
@@ -183,5 +198,3 @@ def delete_lab_case_view(request, case_id):
         'page_title': f'Confirm Delete Lab Case for {case_to_delete.patient.name}'
     }
     return render(request, 'lab_cases/lab_case_confirm_delete.html', context)
-
-

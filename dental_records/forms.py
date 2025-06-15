@@ -54,7 +54,7 @@ PrescriptionItemFormSet = inlineformset_factory(
     PrescriptionItem,           # Child model
     form=PrescriptionItemForm,  # The form to use for each item
     fields=['medication_name', 'dosage', 'frequency', 'duration', 'notes'],
-    extra=1,                    # Show 1 empty form by default
+    extra=0,                    # <-- THIS IS THE FIX
     can_delete=True,            # Allow deleting items when editing
     can_delete_extra=True       # Allow deleting the initial empty forms too
 )
