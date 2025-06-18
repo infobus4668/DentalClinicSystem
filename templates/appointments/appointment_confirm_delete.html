@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+    <h2>{{ page_title }}</h2>
+    <p>Are you sure you want to delete the following appointment?</p>
+
+    <div class="detail-item">
+        <strong>Patient:</strong> {{ appointment.patient.name }}
+    </div>
+    <div class="detail-item">
+        <strong>Doctor:</strong> Dr. {{ appointment.doctor.name }}
+    </div>
+    <div class="detail-item">
+        <strong>Date:</strong> {{ appointment.appointment_datetime|date:"F j, Y" }}
+    </div>
+    <div class="detail-item">
+        <strong>Time:</strong> {{ appointment.appointment_datetime|date:"P" }}
+    </div>
+    <div class="detail-item">
+        <strong>Reason:</strong> {{ appointment.reason|default:"N/A" }}
+    </div>
+
+    <p>This action cannot be undone.</p>
+
+    <form method="POST" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="button-danger">Yes, Delete Appointment</button>
+    </form>
+    <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="action-link button-secondary">Cancel</a>
+{% endblock content %}

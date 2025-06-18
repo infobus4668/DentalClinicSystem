@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+    <h2>{{ page_title }}</h2>
+    <p>Are you sure you want to delete the following invoice?</p>
+
+    <div class="detail-item">
+        <strong>Invoice Number:</strong> {{ invoice.invoice_number }}
+    </div>
+    <div class="detail-item">
+        <strong>Patient:</strong> {{ invoice.patient.name }}
+    </div>
+    <div class="detail-item">
+        <strong>Total Amount:</strong> ₹{{ invoice.total_amount|floatformat:2 }}
+    </div>
+    <div class="detail-item">
+        <strong>Status:</strong> {{ invoice.get_status_display }}
+    </div>
+
+    <p>This action cannot be undone.</p>
+
+    <form method="POST" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="button button-danger">Yes, Delete Invoice</button>
+    </form>
+    <a href="{% url 'billing:invoice_detail' invoice.id %}" class="action-link button-secondary">Cancel</a>
+{% endblock content %}

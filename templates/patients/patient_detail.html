@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+    <h2>{{ page_title }}</h2>
+
+    <div class="main-actions-bar" style="border-top: none; padding-top: 0;">
+        <a href="{% url 'patients:edit_patient' patient.id %}" class="action-link button-warning">Edit Patient Details</a>
+        <a href="{% url 'appointments:schedule_appointment' %}?patient_id={{ patient.id }}" class="action-link button-success">Schedule New Appointment</a>
+        <a href="{% url 'billing:create_invoice' %}?patient_id={{ patient.id }}" class="action-link button-info">Create Invoice</a>
+    </div>
+
+    <h2>Patient Information</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+        <div>
+            <div class="detail-item"><strong>Patient ID:</strong> {{ patient.id }}</div>
+            <div class="detail-item"><strong>Name:</strong> {{ patient.name }}</div>
+            <div class="detail-item"><strong>Date of Birth:</strong> {{ patient.date_of_birth|date:"F d, Y" }}</div>
+            <div class="detail-item"><strong>Age:</strong> {{ patient.age }} years</div>
+            <div class="detail-item"><strong>Gender:</strong> {{ patient.get_gender_display }}</div>
+        </div>
+        <div>
+            <div class="detail-item"><strong>Contact Number:</strong> {{ patient.contact_number }}</div>
+            <div class="detail-item"><strong>Place:</strong> {{ patient.place|default:"N/A" }}</div>
+            <div class="detail-item"><strong>Record Created:</strong> {{ patient.created_at|date:"F d, Y, P" }}</div>
+            <div class="detail-item"><strong>Last Updated:</strong> {{ patient.updated_at|date:"F d, Y, P" }}</div>
+        </div>
+    </div>
+
+    <hr>
+
+    <h2>Medical Information</h2>
+    <div class="detail-item"><strong>Allergies:</strong> {{ patient.allergies|default:"None recorded" }}</div>
+    <div class="detail-item"><strong>Ongoing Conditions:</strong> {{ patient.ongoing_conditions|default:"None recorded" }}</div>
+    <div class="detail-item"><strong>Current Medications:</strong> {{ patient.medications|default:"None recorded" }}</div>
+
+    <hr>
+    <h2>Appointment History</h2>
+    {% if patient_appointments %}
+     <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Doctor</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in patient_appointments %}
+                <tr>
+                    <td>{{ appointment.appointment_datetime|date:"Y-m-d P" }}</td>
+                    <td>Dr. {{ appointment.doctor.name }}</td>
+                    <td>{{ appointment.reason|truncatewords:10|default:"N/A" }}</td>
+                    <td><span class="status-badge status-{{ appointment.status }}">{{ appointment.get_status_display }}</span></td>
+                    <td>
+                        <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="button button-secondary" style="padding: 5px 10px; font-size: 0.9em;">View Details</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    {% else %}
+        <p class="no-items">This patient has no appointment history.</p>
+    {% endif %}
+
+    <hr>
+    <h2>Invoice History</h2>
+    {% if patient_invoices %}
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Paid</th>
+                    <th>Balance Due</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in patient_invoices %}
+                <tr>
+                    <td>{{ invoice.invoice_number }}</td>
+                    <td>{{ invoice.invoice_date|date:"Y-m-d" }}</td>
+                    <td>₹{{ invoice.total_amount|floatformat:2 }}</td>
+                    <td>₹{{ invoice.amount_paid|floatformat:2 }}</td>
+                    <td>₹{{ invoice.balance_due|floatformat:2 }}</td>
+                    <td><span class="status-badge status-{{ invoice.status }}">{{ invoice.get_status_display }}</span></td>
+                    <td>
+                        <a href="{% url 'billing:invoice_detail' invoice.id %}" class="button button-secondary" style="padding: 5px 10px; font-size: 0.9em;">View Invoice</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    {% else %}
+        <p class="no-items">This patient has no invoice history.</p>
+    {% endif %}
+
+    <div class="main-actions-bar">
+        <a href="{% url 'patients:patient_list' %}" class="action-link button-secondary">Back to Patient List</a>
+        <a href="{% url 'patients:delete_patient' patient.id %}" class="action-link button-danger">Delete Patient</a>
+    </div>
+{% endblock content %}

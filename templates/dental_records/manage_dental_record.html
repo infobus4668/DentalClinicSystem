@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} - Dental Clinic MS{% endblock title %}
+
+{% block content %}
+<h2>{{ page_title }}</h2>
+
+<div class="no-items" style="text-align: left; padding: 10px; font-style: normal; margin-bottom: 25px; background-color: #cff4fc; color: #055160; border: 1px solid #b6effb;">
+    <p style="margin:0;"><strong>Patient:</strong> {{ appointment.patient.name }}</p>
+    <p style="margin:0;"><strong>Appointment Date:</strong> {{ appointment.appointment_datetime|date:"F d, Y" }}</p>
+</div>
+
+{# --- MODIFIED FORM TAG --- #}
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    {{ form.non_field_errors }}
+    {% for field in form %}
+        <div class="field-container">
+            {{ field.label_tag }}
+            {{ field }}
+            {{ field.errors }}
+            {% if field.help_text %}
+                <small class="form-text text-muted">{{ field.help_text }}</small>
+            {% endif %}
+        </div>
+    {% endfor %}
+    
+    <div class="main-actions-bar">
+        <button type="submit" class="button button-success">Save Record</button>
+        <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="button button-secondary">Cancel</a>
+    </div>
+</form>
+
+<hr>
+
+{# --- NEW: SECTION TO DISPLAY EXISTING IMAGES --- #}
+<h3>Attached Images & X-Rays</h3>
+<div style="display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 30px;">
+    {% for image in record.images.all %}
+        <div class="image-thumbnail" style="text-align: center;">
+            <a href="{{ image.image.url }}" target="_blank" title="View full image">
+                <img src="{{ image.image.url }}" alt="{{ image.caption }}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 5px; border: 1px solid var(--border-color);">
+            </a>
+            <p style="margin-top: 5px; font-size: 0.9em; color: var(--text-color-light);">{{ image.caption|default:"-" }}</p>
+        </div>
+    {% empty %}
+        <div class="no-items">
+            <p>No images have been uploaded for this record yet.</p>
+        </div>
+    {% endfor %}
+</div>
+
+
+{# --- NEW: SECTION TO UPLOAD A NEW IMAGE --- #}
+<h3>Upload New Image</h3>
+<form action="{% url 'dental_records:manage_dental_record' appointment_id=appointment.id %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {# This hidden input tells the view that this form submission is for an image upload #}
+    <input type="hidden" name="action" value="upload_image">
+    
+    <div class="field-container">
+        <label for="id_image">Image File:</label>
+        <input type="file" name="image" required id="id_image" accept="image/*">
+    </div>
+    <div class="field-container">
+        <label for="id_caption">Caption (Optional):</label>
+        <input type="text" name="caption" id="id_caption" placeholder="e.g., Pre-op X-Ray for #14">
+    </div>
+    <div class="page-actions">
+        <button type="submit" class="button button-info">Upload Image</button>
+    </div>
+</form>
+
+{% endblock content %}

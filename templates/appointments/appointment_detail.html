@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Appointment for {{ appointment.patient.name }}{% endblock title %}
+
+{% block content %}
+
+    <div class="details-header-card">
+        <div class="patient-info">
+            <h2>{{ appointment.patient.name }}</h2>
+            <p>
+                Appointment on {{ appointment.appointment_datetime|date:"F d, Y, P" }}
+                <span class="status-badge status-{{ appointment.status }}">{{ appointment.get_status_display }}</span>
+            </p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'appointments:edit_appointment' appointment_id=appointment.id %}" class="button button-secondary">Reschedule/Edit</a>
+            <a href="{% url 'appointments:print_bill_summary' appointment_id=appointment.id %}" target="_blank" class="button button-primary">Print Full Bill & Summary</a>
+        </div>
+    </div>
+
+    <div class="details-grid">
+
+        <div class="detail-card">
+            <div class="detail-card-header">
+                <h3>Clinical Record</h3>
+                <a href="{% url 'dental_records:manage_dental_record' appointment_id=appointment.id %}" class="button button-info">Manage Record</a>
+            </div>
+            
+            {% if dental_record %}
+                <div class="detail-item">
+                    <strong>Clinical Notes:</strong>
+                    <p class="record-text">{{ dental_record.clinical_notes|linebreaksbr|default:"No clinical notes recorded." }}</p>
+                </div>
+                <div class="detail-item">
+                    <strong>Treatments Performed:</strong>
+                    <p class="record-text">{{ dental_record.treatments_performed|linebreaksbr|default:"No treatments recorded." }}</p>
+                </div>
+
+                {% if dental_record.images.all %}
+                <div class="detail-item">
+                    <strong>Attached Images:</strong>
+                    <div class="image-gallery-grid">
+                        {% for image in dental_record.images.all %}
+                            <div class="thumbnail">
+                                <a href="{{ image.image.url }}" target="_blank" title="{{ image.caption|default:'View image' }}">
+                                    <img src="{{ image.image.url }}" alt="{{ image.caption }}">
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            {% else %}
+                <p>No clinical record has been created for this appointment yet.</p>
+            {% endif %}
+        </div>
+
+        <div class="detail-card">
+            <div class="detail-card-header">
+                <h3>Appointment Info</h3>
+            </div>
+
+            <div class="detail-item detail-item--grid">
+                <strong>Doctor:</strong>
+                <p>Dr. {{ appointment.doctor.name }}</p>
+            </div>
+
+            <div class="detail-item detail-item--grid">
+                <strong>Patient:</strong>
+                <p><a href="{% url 'patients:patient_detail' patient_id=appointment.patient.pk %}">{{ appointment.patient.name }}</a></p>
+            </div>
+
+            <div class="detail-item detail-item--grid">
+                <strong>Patient Age:</strong>
+                <p>{{ appointment.patient.age }} years</p>
+            </div>
+
+            <div class="detail-item detail-item--grid">
+                <strong>Reason for Visit:</strong>
+                <p>{{ appointment.reason|default:"N/A" }}</p>
+            </div>
+        </div>
+        
+        <div class="detail-card">
+            <div class="detail-card-header">
+                <h3>Prescription</h3>
+                <a href="{% url 'dental_records:manage_prescription' appointment_id=appointment.id %}" class="button button-success">Manage Prescription</a>
+            </div>
+            
+            {% with prescription=dental_record.prescription %}
+                {% if prescription %}
+                    <div class="detail-item">
+                        <strong>General Prescription Notes:</strong>
+                        <p class="record-text">{{ prescription.notes|linebreaksbr|default:"N/A" }}</p>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Medications:</strong>
+                        <ul>
+                            {% for item in prescription.items.all %}
+                                <li>{{ item.medication_name }} ({{ item.dosage }}) - {{ item.frequency }} for {{ item.duration }}</li>
+                            {% empty %}
+                                <li>No medications listed.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% else %}
+                    <p>No prescription has been created for this appointment.</p>
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="detail-card">
+            <div class="detail-card-header">
+                <h3>Billing</h3>
+            </div>
+            {% if appointment.invoice %}
+                <div class="detail-item">
+                    <strong>Invoice Status:</strong>
+                    <p><span class="status-badge status-{{ appointment.invoice.status }}">{{ appointment.invoice.get_status_display }}</span></p>
+                </div>
+                <div class="detail-item">
+                    <strong>Total Amount:</strong>
+                    <p>₹{{ appointment.invoice.net_amount|floatformat:2 }}</p>
+                </div>
+                 <div class="detail-item">
+                    <strong>Amount Paid:</strong>
+                    <p>₹{{ appointment.invoice.amount_paid|floatformat:2 }}</p>
+                </div>
+                <a href="{% url 'billing:invoice_detail' invoice_id=appointment.invoice.pk %}" class="button button-primary" style="width: 100%;">View Invoice</a>
+            {% else %}
+                <p>No invoice has been created for this appointment yet.</p>
+                <a href="{% url 'billing:create_invoice_from_appointment' appointment_id=appointment.id %}" class="button button-success" style="width: 100%;">Create Invoice</a>
+            {% endif %}
+        </div>
+        
+    </div>
+
+    <div class="page-actions" style="border-bottom: none; padding-bottom: 0; margin-top: 30px;">
+        <a href="{% url 'appointments:appointment_list' %}" class="button button-secondary">← Back to Appointment List</a>
+    </div>
+
+{% endblock content %}

@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ CLINIC_NAME }}{% endblock title %}</title>
+    
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    
+    {% block extra_head %}{% endblock extra_head %}
+</head>
+<body>
+    <div class="page-wrapper">
+
+        <div class="container">
+            
+            <header class="site-header">
+                <h1>{{ CLINIC_NAME }}</h1>
+            </header>
+
+            <nav class="main-nav">
+                <ul>
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                        <li><a href="{% url 'patients:patient_list' %}">Patients</a></li>
+                        <li><a href="{% url 'doctors:doctor_list' %}">Doctors</a></li>
+                        <li><a href="{% url 'appointments:appointment_list' %}">Appointments</a></li>
+                        <li><a href="{% url 'billing:service_list' %}">Services</a></li>
+                        <li><a href="{% url 'billing:product_list' %}">Inventory</a></li>
+                        <li><a href="{% url 'billing:invoice_list' %}">Invoices</a></li>
+                        <li><a href="{% url 'lab_cases:lab_case_list' %}">Lab Cases</a></li>
+                        {% if user.staff_profile.role == 'MANAGER' %}
+                            <li><a href="{% url 'staff:staff_list' %}">Staff</a></li>
+                            <li><a href="{% url 'reporting:report_index' %}">Reports</a></li>
+                        {% endif %}
+                        <li style="float: right;">
+                            <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="nav-logout-button">Logout</button>
+                            </form>
+                        </li>
+                        <li style="float: right; padding: 10px 15px; color: #e9ecef;">Welcome, {{ user.username }}</li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}" class="button button-success">Login</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% block content %}
+            {% endblock content %}
+
+        </div> 
+        <footer class="site-footer">
+            <p>{{ CLINIC_NAME }}</p>
+            <p>{{ CLINIC_ADDRESS }}</p>
+            <p>Phone: {{ CLINIC_PHONE }} | Email: {{ CLINIC_EMAIL }}</p>
+        </footer>
+
+    </div> 
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    {% block extra_js %}{% endblock extra_js %}
+</body>
+</html>

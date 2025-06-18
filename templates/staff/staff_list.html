@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} - Staff{% endblock title %}
+
+{% block content %}
+<h2>{{ page_title }}</h2>
+
+<div class="page-actions">
+<a href="{% url 'staff:add_staff_member' %}" class="action-link button-primary">Add New Staff Member</a>
+</div>
+{% if staff_members_list %}
+<div class="table-responsive">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Contact Number</th>
+                <th>Email</th>
+                <th>Date Joined</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for staff_member in staff_members_list %}
+            <tr>
+                {# Link to the detail page for this staff member #}
+                <td><a href="{% url 'staff:staff_detail' staff_member.id %}">{{ staff_member.name }}</a></td>
+                <td>{{ staff_member.get_role_display }}</td>
+                <td>{{ staff_member.contact_number|default:"N/A" }}</td>
+                <td>{{ staff_member.email|default:"N/A" }}</td>
+                <td>{{ staff_member.date_joined|date:"M d, Y" }}</td>
+                <td>{% if staff_member.is_active %}Yes{% else %}No{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+{% else %}
+    <p class="no-items">No staff members found in the system yet.</p>
+{% endif %}
+
+{% endblock content %}

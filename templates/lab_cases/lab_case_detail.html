@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} - Dental Clinic MS{% endblock title %}
+
+{% block content %}
+<h2>{{ page_title }}</h2>
+
+<div class="detail-item">
+    <strong>Case ID:</strong> {{ case.id }}
+</div>
+<div class="detail-item">
+    <strong>Patient:</strong>
+    {# Link to the patient's main detail page for easy access #}
+    <a href="{% url 'patients:patient_detail' case.patient.id %}">{{ case.patient.name }}</a>
+</div>
+<div class="detail-item">
+    <strong>Doctor:</strong> {{ case.doctor.name|default:"N/A" }}
+</div>
+<div class="detail-item">
+    <strong>Dental Lab:</strong> {{ case.lab.name }}
+</div>
+
+<h2 style="font-size: 1.5em; margin-top: 2em;">Case Information</h2>
+<div class="detail-item">
+    <strong>Case Type:</strong> {{ case.case_type }}
+</div>
+<div class="detail-item">
+    <strong>Description / Instructions:</strong>
+    <p style="white-space: pre-wrap; background-color:#f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #dee2e6;">{{ case.description|default:"N/A" }}</p>
+</div>
+<div class="detail-item">
+    <strong>Status:</strong> <span class="status-badge status-{{ case.status }}">{{ case.get_status_display }}</span>
+</div>
+<div class="detail-item">
+    <strong>Lab Cost:</strong> {% if case.cost %}₹{{ case.cost|floatformat:2 }}{% else %}N/A{% endif %}
+</div>
+
+<h2 style="font-size: 1.5em; margin-top: 2em;">Case Timeline</h2>
+<div class="detail-item">
+    <strong>Date Sent to Lab:</strong> {{ case.date_sent|date:"F d, Y"|default:"Not Sent" }}
+</div>
+<div class="detail-item">
+    <strong>Date Due from Lab:</strong> {{ case.date_due|date:"F d, Y"|default:"Not Set" }}
+</div>
+<div class="detail-item">
+    <strong>Date Received from Lab:</strong> {{ case.date_received|date:"F d, Y"|default:"Not Received" }}
+</div>
+<div class="detail-item">
+    <strong>Record Created On:</strong> {{ case.created_at|date:"F d, Y, P" }}
+</div>
+
+<div class="main-actions-bar">
+    <a href="{% url 'lab_cases:lab_case_list' %}" class="button button-secondary">Back to Lab Case List</a>
+    <a href="{% url 'lab_cases:edit_lab_case' case.id %}" class="button button-warning">Edit Case</a>
+    <a href="{% url 'lab_cases:delete_lab_case' case.id %}" class="button button-danger">Delete Case</a>
+</div>
+
+{% endblock content %}

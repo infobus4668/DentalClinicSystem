@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+    <h2>{{ page_title }}</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <div class="main-actions-bar">
+            <button type="submit" class="button button-success">Schedule Appointment</button>
+            <a href="{% url 'appointments:appointment_list' %}" class="action-link button-secondary">Back to Appointment List</a>
+        </div>
+    </form>
+{% endblock content %}

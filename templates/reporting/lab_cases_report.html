@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+<h2>{{ page_title }}</h2>
+<p>Filter by date range, dental lab, or patient name to view lab case history.</p>
+
+<div class="card mb-4" style="background-color: #f8f9fa; padding: 20px; margin-bottom: 2em;">
+    <form method="get" class="form-inline" style="gap: 20px; align-items: flex-end;">
+        <div class="field-container" style="flex: 1;">
+            {{ form.start_date.label_tag }}
+            {{ form.start_date }}
+        </div>
+        <div class="field-container" style="flex: 1;">
+            {{ form.end_date.label_tag }}
+            {{ form.end_date }}
+        </div>
+        <div class="field-container" style="flex: 2;">
+            {{ form.lab.label_tag }}
+            {{ form.lab }}
+        </div>
+        <div class="field-container" style="flex: 2;">
+            {{ form.patient.label_tag }}
+            {{ form.patient }}
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="button button-primary">Filter</button>
+            <a href="{% url 'reporting:lab_cases_report' %}" class="button button-secondary">Clear</a>
+        </div>
+    </form>
+</div>
+
+{% if lab_cases %}
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date Sent</th>
+                    <th>Patient</th>
+                    <th>Case Type</th>
+                    <th>Lab</th>
+                    <th>Status</th>
+                    <th class="text-right">Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for case in lab_cases %}
+                <tr>
+                    <td>{{ case.date_sent|date:"Y-m-d" }}</td>
+                    <td>{{ case.patient.name }}</td>
+                    <td><a href="{% url 'lab_cases:lab_case_detail' case.id %}">{{ case.case_type }}</a></td>
+                    <td>{{ case.lab.name }}</td>
+                    <td><span class="status-badge status-{{ case.status }}">{{ case.get_status_display }}</span></td>
+                    <td class="text-right">₹{{ case.cost|floatformat:2|default:"0.00" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="no-items">
+        <p>No lab cases were found matching your filter criteria.</p>
+    </div>
+{% endif %}
+
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('.select2-enable').select2({
+            placeholder: "Select an option",
+            allowClear: true
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+<h2>{{ page_title }}</h2>
+<p>Filter by date range and/or supplier to view payment history.</p>
+
+<div class="card mb-4" style="background-color: #f8f9fa; padding: 20px; margin-bottom: 2em;">
+    <form method="get" class="form-inline" style="gap: 20px; align-items: flex-end;">
+        <div class="field-container" style="flex: 1;">
+            {{ form.start_date.label_tag }}
+            {{ form.start_date }}
+        </div>
+        <div class="field-container" style="flex: 1;">
+            {{ form.end_date.label_tag }}
+            {{ form.end_date }}
+        </div>
+        <div class="field-container" style="flex: 2;">
+            {{ form.supplier.label_tag }}
+            {{ form.supplier }}
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="button button-primary">Filter</button>
+            <a href="{% url 'reporting:supplier_payment_report' %}" class="button button-secondary">Clear</a>
+        </div>
+    </form>
+</div>
+
+{% if payments %}
+    <div class="card" style="padding: 20px; text-align: center; background-color: #d4edda; border-color: #c3e6cb; margin-bottom: 2em;">
+        <h3>Total Paid in this Period: <span style="color: var(--success-color);">₹{{ total_paid|floatformat:2 }}</span></h3>
+    </div>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Payment Date</th>
+                    <th>Supplier</th>
+                    <th>For PO #</th>
+                    <th>Payment Method</th>
+                    <th class="text-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td>{{ payment.payment_date|date:"Y-m-d" }}</td>
+                    <td>{{ payment.purchase_order.supplier.name }}</td>
+                    <td><a href="{% url 'billing:purchase_order_detail' payment.purchase_order.id %}">{{ payment.purchase_order.id }}</a></td>
+                    <td>{{ payment.get_payment_method_display }}</td>
+                    <td class="text-right">₹{{ payment.amount|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="no-items">
+        <p>No supplier payments were recorded matching your filter criteria.</p>
+    </div>
+{% endif %}
+
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('.select2-enable').select2({
+            placeholder: "Select a Supplier",
+            allowClear: true
+        });
+    });
+</script>
+{% endblock %}

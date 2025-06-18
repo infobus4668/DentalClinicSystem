@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} - Dental Clinic MS{% endblock title %}
+
+{% block content %}
+<h2>{{ page_title }}</h2>
+
+{# This is the main button at the top, which we will keep. It should now be functional. #}
+<div class="page-actions" style="border-top: none; padding-top: 0;">
+    <a href="{% url 'lab_cases:add_lab_case' %}" class="action-link button-primary">Log New Lab Case</a>
+    <a href="{% url 'lab_cases:lab_list' %}" class="action-link button-secondary">Manage Dental Labs</a>
+</div>
+
+{% if lab_cases_list %}
+<div class="table-responsive">
+        <thead>
+            <tr>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Lab</th>
+                <th>Case Type</th>
+                <th>Status</th>
+                <th>Date Sent</th>
+                <th>Date Due</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for case in lab_cases_list %}
+            <tr>
+                <td>{{ case.patient.name }}</td>
+                <td>{{ case.doctor.name|default:"N/A" }}</td>
+                <td>{{ case.lab.name }}</td>
+                <td><a href="{% url 'lab_cases:lab_case_detail' case.id %}">{{ case.case_type }}</a></td>
+                <td>{{ case.get_status_display }}</td>
+                <td>{{ case.date_sent|date:"M d, Y"|default:"N/A" }}</td>
+                <td>{{ case.date_due|date:"M d, Y"|default:"N/A" }}</td>
+                <td>
+                    {# We will activate these links next #}
+                    {# <a href="#" class="button button-info">Details</a> #}
+                    {# <a href="#" class="button button-warning">Edit</a> #}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+    <p class="no-items">No lab cases found in the system yet.</p>
+{% endif %}
+
+{# The duplicate button that was here has been removed. #}
+<div class="main-actions-bar">
+    {# This bar can be used for other actions later if needed, e.g. "Export List" #}
+</div>
+
+{% endblock content %}

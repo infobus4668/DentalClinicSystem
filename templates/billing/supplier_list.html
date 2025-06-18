@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Product Suppliers{% endblock title %}
+
+{% block content %}
+<h2>Product Suppliers</h2>
+
+<div class="page-actions">
+    <a href="{% url 'billing:add_supplier' %}" class="action-link button-primary">Add New Supplier</a>
+    <a href="{% url 'billing:product_list' %}" class="button button-secondary">Back to Product List</a>
+</div>
+
+{% if suppliers_list %}
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Supplier Name</th>
+                    <th>Contact Person</th>
+                    <th>Contact Number</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for supplier in suppliers_list %}
+                <tr>
+                    <td>{{ supplier.name }}</td>
+                    <td>{{ supplier.contact_person|default:"N/A" }}</td>
+                    <td>{{ supplier.phone_number|default:"N/A" }}</td>
+                    <td>{{ supplier.email|default:"N/A" }}</td>
+                    <td>{{ supplier.address|truncatewords:10|default:"N/A" }}</td>
+                    <td class="actions-column">
+                        <a href="{% url 'billing:edit_supplier' supplier.id %}" class="button button-warning">Edit</a>
+                        <a href="{% url 'billing:delete_supplier' supplier.id %}" class="button button-danger">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p class="no-items">No suppliers found in the system. Add one to get started.</p>
+{% endif %}
+
+{% endblock content %}

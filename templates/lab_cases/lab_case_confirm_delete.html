@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} - Dental Clinic MS{% endblock title %}
+
+{% block content %}
+<div style="text-align: center;"> {# Centering the content of this page #}
+    <h2 style="color: #dc3545;">{{ page_title }}</h2>
+    
+    <p>Are you sure you want to permanently delete the lab case for <strong>{{ case.patient.name }}</strong>?</p>
+    
+    <div class="no-items" style="text-align: left; display: inline-block; background-color: #f8f9fa; margin-bottom: 20px;">
+        <p style="margin-bottom: 5px;"><strong>Case Type:</strong> {{ case.case_type }}</p>
+        <p style="margin-bottom: 5px;"><strong>Lab:</strong> {{ case.lab.name }}</p>
+        <p style="margin-bottom: 5px;"><strong>Date Sent:</strong> {{ case.date_sent|date:"M d, Y"|default:"N/A" }}</p>
+    </div>
+
+    <p style="font-weight: bold;">This action cannot be undone.</p>
+    
+    <form method="POST" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="button button-danger">Yes, Delete Case</button>
+    </form>
+    
+    <a href="{% url 'lab_cases:lab_case_detail' case.id %}" class="button button-secondary">Cancel</a>
+</div>
+{% endblock content %}

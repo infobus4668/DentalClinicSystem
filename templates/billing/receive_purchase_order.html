@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+<div class="form-container">
+    <h2 class="form-title">{{ page_title }}</h2>
+    <p class="form-subtitle">For each item from supplier <strong>{{ purchase_order.supplier.name }}</strong>, enter the quantity you are receiving in this shipment.</p>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {{ formset.management_form }}
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th style="text-align: right;">Remaining to Receive</th>
+                        <th>Receive Now</th>
+                        <th>Batch Number</th>
+                        <th>Expiry Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for form, item in forms_with_items %}
+                        <tr>
+                            <td>
+                                {{ form.purchase_order_item_id }}
+                                <strong>{{ item.product.name }}</strong>
+                            </td>
+                            <td style="text-align: right;">{{ item.quantity_remaining }}</td>
+                            <td>{{ form.quantity_to_receive }}</td>
+                            <td>{{ form.batch_number }}</td>
+                            <td>{{ form.expiry_date }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="form-actions" style="margin-top: 20px;">
+            <button type="submit" class="button button-primary">Save Received Stock</button>
+            <a href="{% url 'billing:purchase_order_detail' purchase_order.id %}" class="button button-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock content %}

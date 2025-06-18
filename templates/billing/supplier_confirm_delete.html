@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm Delete{% endblock title %}
+
+{% block content %}
+<div class="form-container" style="max-width: 600px; text-align: center;">
+    <h2 class="form-title">Confirm Delete</h2>
+    <p>Are you sure you want to delete the supplier: <strong>"{{ supplier.name }}"</strong>?</p>
+    <p class="text-danger">This action cannot be undone.</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-actions" style="justify-content: center;">
+            <button type="submit" class="button button-danger">Yes, Delete</button>
+            <a href="{% url 'billing:supplier_list' %}" class="button button-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock content %}

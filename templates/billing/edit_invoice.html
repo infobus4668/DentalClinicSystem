@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+<h2>{{ page_title }}</h2>
+
+<form method="POST" id="invoice-form">
+    {% csrf_token %}
+    <div class="detail-card mb-4">
+        <div class="detail-card-header"><h3>Invoice Details</h3></div>
+        {{ invoice_form.as_p }}
+    </div>
+
+    <div class="detail-card">
+        <div class="detail-card-header"><h3>Invoice Items</h3></div>
+        
+        <div id="invoice-items-container">
+            {{ formset.management_form }}
+            {% if formset.non_form_errors %}
+                <div class="messages">
+                    <li class="error">{{ formset.non_form_errors }}</li>
+                </div>
+            {% endif %}
+
+            {% for form in formset %}
+                <div class="formset-row" style="border-bottom: 1px solid #eee; padding-bottom: 1.5em; margin-bottom: 1.5em;">
+                    <div class="formset-row-fields">
+                        {% for hidden_field in form.hidden_fields %}{{ hidden_field }}{% endfor %}
+                        <div style="display:none;">{{ form.DELETE }}</div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; align-items: flex-start;">
+                            {% for field in form.visible_fields %}
+                                <div class="field-container" data-field-name="{{ field.name }}">
+                                    {{ field.label_tag }}
+                                    {{ field }}
+                                    {% for error in field.errors %}
+                                        <div class="error-message" style="color: var(--danger-color);">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <button type="button" class="remove-row-btn button button-danger" style="margin-top: 10px; padding: 5px 10px; font-size: 0.8em;">Remove</button>
+                </div>
+            {% endfor %}
+        </div>
+
+        <template id="empty-form-template">
+            <div class="formset-row" style="border-bottom: 1px solid #eee; padding-bottom: 1.5em; margin-bottom: 1.5em;">
+                <div class="formset-row-fields">
+                    {% for hidden_field in formset.empty_form.hidden_fields %}{{ hidden_field }}{% endfor %}
+                    <div style="display:none;">{{ formset.empty_form.DELETE }}</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; align-items: flex-start;">
+                        {% for field in formset.empty_form.visible_fields %}
+                             <div class="field-container" data-field-name="{{ field.name }}">
+                                {{ field.label_tag }}
+                                {{ field }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <button type="button" class="remove-row-btn button button-danger" style="margin-top: 10px; padding: 5px 10px; font-size: 0.8em;">Remove</button>
+            </div>
+        </template>
+        
+        <button type="button" class="add-row-button button" id="add-item-button" style="margin-top: 15px;">Add another Invoice Item</button>
+    </div>
+    
+    <div class="main-actions-bar">
+        <button type="submit" class="button button-success">Save Changes</button>
+        <a href="{% url 'billing:invoice_detail' invoice.id %}" class="button button-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock content %}
+
+{% block extra_js %}
+<script type="text/javascript">
+$(document).ready(function() {
+    const itemData = JSON.parse('{{ js_data|escapejs }}');
+    const container = $('#invoice-items-container');
+
+    function initializeRow(row) {
+        row.find('.select2-enable').select2({ theme: "classic", width: '100%' });
+
+        const productSelect = row.find('select[name$="-product"]');
+        const batchSelect = row.find('select[name$="-stock_item"]');
+        const serviceSelect = row.find('select[name$="-service"]');
+        const priceInput = row.find('input[name$="-unit_price"]');
+        const quantityInput = row.find('input[name$="-quantity"]');
+        const descInput = row.find('input[name$="-description"]');
+
+        productSelect.on('change', function() {
+            const productId = $(this).val();
+            
+            const currentBatch = batchSelect.val();
+            batchSelect.html('<option value="">Select Batch</option>'); 
+            
+            if (productId && itemData.batches[productId]) {
+                serviceSelect.val(null).trigger('change.select2');
+                const batches = itemData.batches[productId];
+                batches.forEach(function(batch) {
+                    const isSelected = (batch.id == currentBatch);
+                    const option = new Option(batch.name, batch.id, isSelected, isSelected);
+                    batchSelect.append(option);
+                });
+                
+                if (currentBatch) {
+                    batchSelect.val(currentBatch);
+                }
+                batchSelect.trigger('change'); 
+                
+                priceInput.val(itemData.products[productId].price || '0.00');
+            } else {
+                 batchSelect.trigger('change');
+            }
+        });
+
+        batchSelect.on('change', function() {
+            const productId = productSelect.val();
+            const batchId = $(this).val();
+            if (productId && batchId && itemData.batches[productId]) {
+                const batch = itemData.batches[productId].find(b => b.id == batchId);
+                if (batch) {
+                    const originalQuantity = parseInt(row.find('input[name$="-quantity"]').attr('value')) || 0;
+                    quantityInput.attr('max', batch.available + originalQuantity);
+                }
+            } else {
+                quantityInput.removeAttr('max');
+            }
+        });
+
+        serviceSelect.on('change', function() {
+            const serviceId = $(this).val();
+            if (serviceId) {
+                productSelect.val(null).trigger('change.select2');
+                priceInput.val(itemData.services[serviceId] || '0.00');
+            }
+        });
+        
+        // Trigger change on page load to populate batches for existing items
+        if(productSelect.val()){
+           productSelect.trigger('change');
+        }
+    }
+
+    container.find('.formset-row').each(function() {
+        initializeRow($(this));
+    });
+    
+    container.on('click', '.remove-row-btn', function() {
+        const row = $(this).closest('.formset-row');
+        const deleteInput = row.find('input[name$="-DELETE"]');
+        
+        if (deleteInput.length > 0) {
+            deleteInput.prop('checked', true);
+            row.hide();
+        } else {
+            row.remove();
+        }
+    });
+
+    $('#add-item-button').on('click', function() {
+        const totalFormsInput = $('#id_items-TOTAL_FORMS');
+        let formIdx = parseInt(totalFormsInput.val());
+        const emptyFormTemplate = $('#empty-form-template').html().replace(/__prefix__/g, formIdx);
+        
+        const newRow = $(emptyFormTemplate);
+        container.append(newRow);
+        
+        initializeRow(newRow);
+        totalFormsInput.val(formIdx + 1);
+    });
+});
+</script>
+{% endblock extra_js %}
